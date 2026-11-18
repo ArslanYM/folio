@@ -17,7 +17,7 @@ import {
 } from "@/lib/prompts/design-md";
 import { applyDeterministicQuickStart } from "@/lib/quickstart";
 import { getClientIp, getRateLimiter } from "@/lib/rate-limit";
-import { safeFetchText, SsrfError } from "@/lib/ssrf";
+import { safeFetchText, SsrfError, validatePublicUrl } from "@/lib/ssrf";
 import { validateDesignMd } from "@/lib/validate-md";
 
 export const runtime = "nodejs";
@@ -158,6 +158,22 @@ export async function POST(request: Request) {
       }, 10_000);
 
       try {
+        // Validate URL against SSRF blocklist before checking LLM config so private networks are always rejected immediately
+        if (input.mode === "url") {
+          const rawUrl = input.url ?? "";
+          const normalizedCheckUrl = /^https?:\/\//i.test(rawUrl)
+            ? rawUrl
+            : `https://${rawUrl}`;
+          const preflight = await validatePublicUrl(normalizedCheckUrl);
+          if (!preflight.safe) {
+            throw new SsrfError(
+              preflight.error ?? "Blocked URL.",
+              preflight.code ?? "ssrf-blocked",
+              400
+            );
+          }
+        }
+
         // Verify OpenRouter env configuration upfront
         getModel(input.mode === "url" ? "text" : "vision");
 

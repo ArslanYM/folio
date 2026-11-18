@@ -3,6 +3,7 @@ import { Bricolage_Grotesque } from "next/font/google";
 import { GeistSans } from "geist/font/sans";
 import { GeistMono } from "geist/font/mono";
 import { Toaster } from "sonner";
+import { MotionProvider } from "@/components/motion-provider";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
@@ -42,13 +43,15 @@ export default function RootLayout({
         <a href="#main-content" className="skip-link">
           Skip to main content
         </a>
-        <TooltipProvider>
-          <SiteHeader />
-          <main id="main-content" tabIndex={-1} className="flex-1 outline-none">
-            {children}
-          </main>
-          <SiteFooter />
-        </TooltipProvider>
+        <MotionProvider>
+          <TooltipProvider>
+            <SiteHeader />
+            <main id="main-content" tabIndex={-1} className="flex-1 outline-none">
+              {children}
+            </main>
+            <SiteFooter />
+          </TooltipProvider>
+        </MotionProvider>
         <Toaster
           theme="dark"
           position="bottom-right"

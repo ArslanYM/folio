@@ -44,8 +44,14 @@ Copy `.env.example` to `.env.local` and configure:
 ## Adding a Template (Zero Code Changes)
 
 1. Drop any `.md` file into `content/templates/<slug>.md`.
-2. Optionally add curated `platform`, `mood`, and `tags` metadata for `<slug>` in `content/templates/templates.meta.json` — or include YAML frontmatter at the top of the `.md` file (frontmatter always takes priority).
-3. Optionally add a static `content/templates/<slug>.preview.html` file to render a custom preview inside a scriptless sandboxed `<iframe sandbox="">` on the template's **Preview** tab.
+2. Optionally add curated `platform`, `mood`, `tags`, `websiteUrl`, and `cardBg` metadata for `<slug>` in `content/templates/templates.meta.json` — or include YAML frontmatter at the top of the `.md` file (frontmatter always takes priority).
+3. **Website previews & hover-scroll animation:**
+   - Drop static screenshots into `public/previews/<slug>/`:
+     - `full.png` / `full.webp` — tall full-page screenshot that smoothly scrolls inside the gallery card on hover
+     - `shot-1.png`, `shot-2.png`, `shot-3.png` — 3-up website showcase shown on the detail page's **Preview** tab (click to expand in a native `<dialog>` lightbox)
+     - `icon.svg` / `icon.png` — optional logo/monogram badge
+   - Or run `pnpm capture-previews` (after `pnpm add -D playwright && pnpm exec playwright install chromium`) to automatically capture `shot-1.png`, `shot-2.png`, `shot-3.png`, and `full.png` for every template with a `websiteUrl`.
+   - Alternatively, drop a static `content/templates/<slug>.preview.html` file to render a custom preview inside a scriptless sandboxed `<iframe sandbox="">`.
 4. Restart or rebuild — the template appears automatically in `/templates` and gets its own `/templates/<slug>` page.
 
 The parser in `lib/templates.ts` tolerates both Format A (ORYZO style) and Format B (Orbi/Yuga/Revolut style), skips malformed hex values (such as a 5-digit `#40372` typo) with a dev-only warning instead of crashing, deduplicates identical hex codes keeping the first occurrence, and never rewrites the raw markdown you copy or download.

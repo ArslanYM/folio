@@ -25,6 +25,12 @@ export interface SectionHeading {
   id: string;
 }
 
+export interface PreviewMedia {
+  full?: string;
+  shots: string[];
+  icon?: string;
+}
+
 export interface ParsedTemplate {
   slug: string;
   title: string;
@@ -39,6 +45,9 @@ export interface ParsedTemplate {
   accent: Swatch | undefined;
   canvasHex: string;
   foregroundHex: string;
+  cardBgHex: string;
+  websiteUrl?: string;
+  previewMedia: PreviewMedia;
   sections: Record<string, string>;
   sectionHeadings: SectionHeading[];
   hasSectionRecipes: boolean;
@@ -70,6 +79,13 @@ const StringArraySchema = z
       .filter(Boolean)
   );
 
+const OptionalHttpUrlSchema = z
+  .string()
+  .trim()
+  .url()
+  .refine((val) => /^https?:\/\//i.test(val), "Must be http or https")
+  .optional();
+
 const FrontmatterSchema = z
   .object({
     title: z.string().trim().min(1).optional(),
@@ -80,6 +96,8 @@ const FrontmatterSchema = z
     platform: StringArraySchema.optional(),
     tags: StringArraySchema.optional(),
     mood: StringArraySchema.optional(),
+    websiteUrl: OptionalHttpUrlSchema,
+    cardBg: z.string().trim().optional(),
   })
   .passthrough();
 
@@ -87,6 +105,8 @@ const TemplateMetaEntrySchema = z.object({
   platform: z.array(z.string()).optional(),
   mood: z.array(z.string()).optional(),
   tags: z.array(z.string()).optional(),
+  websiteUrl: OptionalHttpUrlSchema,
+  cardBg: z.string().trim().optional(),
 });
 
 const TemplatesMetaFileSchema = z.record(z.string(), TemplateMetaEntrySchema);
@@ -94,6 +114,9 @@ const TemplatesMetaFileSchema = z.record(z.string(), TemplateMetaEntrySchema);
 export type TemplateMetaEntry = z.infer<typeof TemplateMetaEntrySchema>;
 
 const TEMPLATES_DIR = path.join(process.cwd(), "content", "templates");
+const PREVIEWS_DIR = path.join(process.cwd(), "public", "previews");
+const IMAGE_EXT_RE = /\.(webp|png|jpe?g|avif)$/i;
+const ICON_EXT_RE = /\.(svg|webp|png|jpe?g|ico)$/i;
 
 function titleFromSlug(slug: string): string {
   return slug
@@ -577,6 +600,39 @@ function inferThemeAndCanvas(
   return { theme, canvasHex, foregroundHex };
 }
 
+function pickCardBgHex(
+  theme: TemplateTheme,
+  palette: readonly Swatch[],
+  canvasHex: string,
+  accent: Swatch | undefined,
+  overrideHex?: string
+): string {
+  if (overrideHex && isValidHex(overrideHex)) {
+    const norm = normalizeHex(overrideHex);
+    if (norm) return norm;
+  }
+
+  // Light or mixed systems look super crisp on their light paper/white stage (like Büro / Caserne)
+  if (theme === "light" || theme === "mixed") {
+    const lightStage = palette.find((s) => luminance(s.hex) > 0.85);
+    return lightStage?.hex ?? "#f7f6f2";
+  }
+
+  // Dark systems: prefer a rich saturated brand surface if one exists (like deep emerald / forest / warm cork),
+  // otherwise a subtle elevated dark surface distinct from #0E0D0B canvas
+  const richDarkSurface = palette.find((s) => {
+    const lum = luminance(s.hex);
+    return lum >= 0.03 && lum <= 0.28 && saturation(s.hex) >= 0.35;
+  });
+  if (richDarkSurface) return richDarkSurface.hex;
+
+  if (accent && luminance(accent.hex) <= 0.32) {
+    return accent.hex;
+  }
+
+  return canvasHex === "#0e0d0b" ? "#1c1a15" : canvasHex;
+}
+
 /**
  * Pure parser for any DESIGN.md template file (Format A, Format B, frontmatter, or freeform).
  */
@@ -584,7 +640,8 @@ export function parseTemplateMarkdown(
   rawMarkdown: string,
   slug: string,
   meta?: TemplateMetaEntry,
-  previewHtml?: string
+  previewHtml?: string,
+  previewMedia: PreviewMedia = { shots: [] }
 ): ParsedTemplate {
   const parsedMatter = matter(rawMarkdown);
   const fmResult = FrontmatterSchema.safeParse(parsedMatter.data);
@@ -629,6 +686,14 @@ export function parseTemplateMarkdown(
         : [];
 
   const accent = pickAccent(palette);
+  const cardBgHex = pickCardBgHex(
+    theme,
+    palette,
+    canvasHex,
+    accent,
+    fm.cardBg ?? meta?.cardBg
+  );
+  const websiteUrl = fm.websiteUrl ?? meta?.websiteUrl;
   const hasSectionRecipes = sectionHeadings.some((h) =>
     /^(section|screen)\s+recipes?$/i.test(h.title)
   );
@@ -647,6 +712,9 @@ export function parseTemplateMarkdown(
     accent,
     canvasHex,
     foregroundHex,
+    cardBgHex,
+    ...(websiteUrl ? { websiteUrl } : {}),
+    previewMedia,
     sections,
     sectionHeadings,
     hasSectionRecipes,
@@ -685,6 +753,38 @@ export class FileTemplateStore implements TemplateStore {
     }
   }
 
+  private async readPreviewMedia(slug: string): Promise<PreviewMedia> {
+    const slugDir = path.join(PREVIEWS_DIR, slug);
+    try {
+      const files = (await fs.readdir(slugDir)).sort((a, b) =>
+        a.localeCompare(b)
+      );
+      let full: string | undefined;
+      let icon: string | undefined;
+      const shots: string[] = [];
+
+      for (const file of files) {
+        const lower = file.toLowerCase();
+        const publicUrl = `/previews/${encodeURIComponent(slug)}/${encodeURIComponent(file)}`;
+        if (/^icon\./.test(lower) && ICON_EXT_RE.test(lower)) {
+          icon = publicUrl;
+        } else if (/^full\./.test(lower) && IMAGE_EXT_RE.test(lower)) {
+          full = publicUrl;
+        } else if (IMAGE_EXT_RE.test(lower)) {
+          shots.push(publicUrl);
+        }
+      }
+
+      return {
+        ...(full ? { full } : {}),
+        ...(icon ? { icon } : {}),
+        shots,
+      };
+    } catch {
+      return { shots: [] };
+    }
+  }
+
   async getAllTemplates(): Promise<ParsedTemplate[]> {
     let entries: string[];
     try {
@@ -702,16 +802,17 @@ export class FileTemplateStore implements TemplateStore {
     const templates = await Promise.all(
       mdFiles.map(async (filename) => {
         const slug = filename.replace(/\.md$/, "");
-        const rawMarkdown = await fs.readFile(
-          path.join(this.dir, filename),
-          "utf8"
-        );
-        const previewHtml = await this.readPreviewHtml(slug);
+        const [rawMarkdown, previewHtml, previewMedia] = await Promise.all([
+          fs.readFile(path.join(this.dir, filename), "utf8"),
+          this.readPreviewHtml(slug),
+          this.readPreviewMedia(slug),
+        ]);
         return parseTemplateMarkdown(
           rawMarkdown,
           slug,
           metaMap[slug],
-          previewHtml
+          previewHtml,
+          previewMedia
         );
       })
     );
@@ -720,23 +821,30 @@ export class FileTemplateStore implements TemplateStore {
   }
 
   async getTemplate(slug: string): Promise<ParsedTemplate | null> {
-    // Guard against path traversal
-    if (!/^[a-zA-Z0-9_-]+$/.test(slug)) {
+    // Guard against path traversal while allowing dotted slugs like "auros.global-DESIGN"
+    if (
+      !/^[a-zA-Z0-9._-]+$/.test(slug) ||
+      slug.includes("..") ||
+      slug.startsWith(".")
+    ) {
       return null;
     }
 
     const filePath = path.join(this.dir, `${slug}.md`);
     try {
-      const [rawMarkdown, metaMap, previewHtml] = await Promise.all([
-        fs.readFile(filePath, "utf8"),
-        this.readMetaFile(),
-        this.readPreviewHtml(slug),
-      ]);
+      const [rawMarkdown, metaMap, previewHtml, previewMedia] =
+        await Promise.all([
+          fs.readFile(filePath, "utf8"),
+          this.readMetaFile(),
+          this.readPreviewHtml(slug),
+          this.readPreviewMedia(slug),
+        ]);
       return parseTemplateMarkdown(
         rawMarkdown,
         slug,
         metaMap[slug],
-        previewHtml
+        previewHtml,
+        previewMedia
       );
     } catch {
       return null;

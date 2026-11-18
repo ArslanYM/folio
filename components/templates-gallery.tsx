@@ -200,7 +200,7 @@ export function TemplatesGallery({ templates }: TemplatesGalleryProps) {
           </p>
         </div>
       ) : (
-        <div className="columns-1 gap-5 md:columns-2 xl:columns-3">
+        <div className="columns-1 gap-7 md:columns-2">
           {filtered.map((tpl, idx) => (
             <motion.div
               key={tpl.slug}
@@ -211,9 +211,9 @@ export function TemplatesGallery({ templates }: TemplatesGalleryProps) {
                 delay: shouldReduceMotion ? 0 : idx * 0.05,
                 ease: [0.22, 1, 0.36, 1],
               }}
-              className="mb-5 break-inside-avoid"
+              className="mb-9 break-inside-avoid"
             >
-              <TemplateCard template={tpl} />
+              <TemplateCard template={tpl} priority={idx < 2} />
             </motion.div>
           ))}
         </div>

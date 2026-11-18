@@ -226,6 +226,16 @@
     transform: translateY(-2px);
   }
 
+  .tpl-card:hover .tpl-preview-scroll-img,
+  .tpl-card:focus-within .tpl-preview-scroll-img {
+    transform: translateY(var(--scroll-shift, -42%));
+  }
+
+  .tpl-card:hover .tpl-preview-lift,
+  .tpl-card:focus-within .tpl-preview-lift {
+    transform: translateY(-6px) scale(1.02);
+  }
+
   .swatch-marquee-track {
     animation: swatch-marquee-scroll 42s linear infinite;
   }
@@ -235,6 +245,33 @@
   .swatch-marquee:focus-within .swatch-marquee-track {
     animation-play-state: paused;
   }
+}
+
+.tpl-preview-scroll-img {
+  transition: transform 4.5s cubic-bezier(0.25, 0.1, 0.25, 1);
+  will-change: transform;
+}
+
+.tpl-preview-lift {
+  transition: transform 320ms cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: transform;
+}
+
+/* Native <dialog> lightbox modal (prevent background scroll chaining) */
+dialog.lightbox-dialog:modal {
+  overscroll-behavior: contain;
+}
+
+dialog.lightbox-dialog::backdrop {
+  background: rgba(14, 13, 11, 0.84);
+  backdrop-filter: blur(6px);
+  overflow: hidden;
+  overscroll-behavior: contain;
+}
+
+dialog.lightbox-dialog[open] {
+  display: flex;
+  flex-direction: column;
 }
 
 @keyframes swatch-marquee-scroll {

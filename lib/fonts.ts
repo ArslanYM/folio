@@ -32,6 +32,7 @@ const FONT_SUBSTITUTE_MAP: Record<string, FontMappingEntry> = {
   },
   "halyard-display-variable": { substitute: "Inter", isSubstituted: true },
   "halyard display": { substitute: "Inter", isSubstituted: true },
+  matter: { substitute: "DM Sans", isSubstituted: true },
   "dm sans": { substitute: "DM Sans", isSubstituted: false },
   "space grotesk": { substitute: "Space Grotesk", isSubstituted: false },
   "plus jakarta sans": {

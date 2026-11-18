@@ -14,7 +14,8 @@
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "capture-previews": "node scripts/capture-previews.mjs"
   },
   "dependencies": {
     "@base-ui/react": "^1.9.0",

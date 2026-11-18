@@ -134,9 +134,9 @@ export default async function HomePage() {
           </Link>
         </div>
 
-        <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
-          {templates.slice(0, 4).map((tpl) => (
-            <TemplateCard key={tpl.slug} template={tpl} />
+        <div className="grid grid-cols-1 gap-x-6 gap-y-10 md:grid-cols-2">
+          {templates.slice(0, 4).map((tpl, idx) => (
+            <TemplateCard key={tpl.slug} template={tpl} priority={idx < 2} />
           ))}
         </div>
       </section>

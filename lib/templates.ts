@@ -14,6 +14,9 @@ import {
   type Swatch,
 } from "./color";
 import { isGenericFont, resolveFont, type FontResolution } from "./fonts";
+import { slugifyHeading } from "./slug";
+
+export { slugifyHeading };
 
 export type TemplateTheme = "dark" | "light" | "mixed";
 
@@ -91,15 +94,6 @@ const TemplatesMetaFileSchema = z.record(z.string(), TemplateMetaEntrySchema);
 export type TemplateMetaEntry = z.infer<typeof TemplateMetaEntrySchema>;
 
 const TEMPLATES_DIR = path.join(process.cwd(), "content", "templates");
-
-export function slugifyHeading(title: string): string {
-  return title
-    .toLowerCase()
-    .replace(/[`*_~]/g, "")
-    .replace(/[^a-z0-9\s-]/g, "")
-    .trim()
-    .replace(/\s+/g, "-");
-}
 
 function titleFromSlug(slug: string): string {
   return slug

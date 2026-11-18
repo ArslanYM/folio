@@ -61,7 +61,7 @@ export default async function HomePage() {
           {/* Right 4 cols: Paint-chip fan specimen summary */}
           <aside
             aria-label="Template palette fan preview"
-            className="flex flex-col gap-3 rounded-lg border border-border bg-surface p-4 lg:col-span-4"
+            className="flex flex-col gap-3 rounded-lg border border-border/80 bg-surface/80 p-4 shadow-2xl backdrop-blur-md lg:col-span-4"
           >
             <div className="flex items-center justify-between border-b border-border/80 pb-2 font-mono text-[11px] text-muted-foreground">
               <span>CATALOG SPECIMENS</span>
@@ -75,7 +75,7 @@ export default async function HomePage() {
                   <Link
                     key={tpl.slug}
                     href={`/templates/${tpl.slug}`}
-                    className="group flex items-center justify-between gap-3 rounded-md border border-border/80 bg-canvas/70 px-3 py-2.5 transition-colors hover:border-foreground/35"
+                    className="group flex items-center justify-between gap-3 rounded-md border border-border/80 bg-canvas/60 px-3 py-2.5 backdrop-blur-sm transition-colors hover:border-foreground/35"
                   >
                     <div className="flex min-w-0 items-center gap-2.5">
                       <span

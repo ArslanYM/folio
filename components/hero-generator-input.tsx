@@ -101,7 +101,7 @@ export function HeroGeneratorInput() {
   }
 
   return (
-    <div className="flex flex-col gap-3 rounded-lg border border-border bg-surface p-4 sm:p-5">
+    <div className="flex flex-col gap-3 rounded-lg border border-border/80 bg-surface/85 p-4 shadow-2xl backdrop-blur-md sm:p-5">
       {/* URL form */}
       <form onSubmit={handleUrlSubmit} className="flex flex-col gap-2.5 sm:flex-row">
         <div className="relative flex-1">
@@ -119,7 +119,7 @@ export function HeroGeneratorInput() {
             value={urlValue}
             onChange={(e) => setUrlValue(e.target.value)}
             placeholder="stripe.com, linear.app, or any URL..."
-            className="h-11 border-border bg-canvas pl-9 font-mono text-sm text-foreground placeholder:text-muted-foreground"
+            className="h-11 border-border/80 bg-canvas/80 pl-9 font-mono text-sm text-foreground backdrop-blur-sm placeholder:text-muted-foreground"
           />
         </div>
         <Button

@@ -8,17 +8,21 @@ interface ProjectedPoint {
   x: number;
   y: number;
   z: number;
-  crest: number;
+  depth: number;
 }
 
-const U_STEPS = 44;
-const V_STEPS = 16;
+const U_STEPS = 56;
+const V_STEPS = 22;
 
 /**
- * Architectural 3D parametric warp mesh rendered on HTML5 Canvas using
- * Swatchbook's warm obsidian, hairline umber, ivory, and chartreuse accent palette.
- * Pauses automatically when off-screen (contentvisibilityautostatechange / IntersectionObserver),
- * when the browser tab is hidden, or when prefers-reduced-motion is enabled.
+ * Architectural 3D parametric warp mesh rendered on HTML5 Canvas.
+ * Aesthetic: Swatchbook obsidian, glowing electric chartreuse spine,
+ * luminous ivory longitudinal sweeps, and calibrated specimen nodes.
+ * Features:
+ * - Fluid undulating ribbon-warp geometry with continuous wave motion
+ * - Damped 3D rotation following pointer coordinates
+ * - Perspective projection with depth shading and atmospheric bloom
+ * - Automatically pauses when tab is hidden or prefers-reduced-motion is active
  */
 export function WarpBackground() {
   const pathname = usePathname();
@@ -42,42 +46,77 @@ export function WarpBackground() {
     let height = 0;
     let dpr = 1;
     let rafId: number | null = null;
-    let isSkipped = false;
     let isTabHidden = document.hidden;
-    let time = 0.65;
+    let time = 0.8;
     let lastTimestamp = 0;
 
-    // Gentle damped pointer parallax in [-1, 1]
+    // Pointer coordinates normalized to [-1, 1]
     let targetMouseX = 0;
     let targetMouseY = 0;
     let mouseX = 0;
     let mouseY = 0;
 
     function resize() {
-      if (!container || !canvas || !ctx) return;
-      const rect = container.getBoundingClientRect();
-      width = Math.max(1, Math.floor(rect.width));
-      height = Math.max(1, Math.floor(rect.height));
+      if (!canvas || !ctx) return;
+      width = Math.max(320, window.innerWidth);
+      height = Math.max(320, window.innerHeight);
       dpr = Math.min(window.devicePixelRatio || 1, 2);
+
       canvas.width = Math.floor(width * dpr);
       canvas.height = Math.floor(height * dpr);
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     }
 
     function drawFrame(t: number) {
-      if (!ctx) return;
+      if (!ctx || width === 0 || height === 0) return;
       ctx.clearRect(0, 0, width, height);
 
-      // Anchor sculptural warp slightly to the right & upper-middle on wide viewports
-      const cx = width >= 1024 ? width * 0.64 : width * 0.54;
-      const cy = height * 0.46;
-      const scale = Math.min(width, height) * (width >= 1024 ? 0.52 : 0.46);
+      // 1. Ambient atmospheric glow behind the 3D figure
+      const glowX = width >= 1024 ? width * 0.64 : width * 0.52;
+      const glowY = height * 0.42;
+      const glowRadius = Math.min(width, height) * 0.7;
+
+      const radialGrad = ctx.createRadialGradient(
+        glowX,
+        glowY,
+        15,
+        glowX,
+        glowY,
+        glowRadius
+      );
+      radialGrad.addColorStop(0, "rgba(200, 242, 61, 0.14)");
+      radialGrad.addColorStop(0.32, "rgba(200, 242, 61, 0.05)");
+      radialGrad.addColorStop(0.68, "rgba(23, 21, 15, 0.02)");
+      radialGrad.addColorStop(1, "rgba(14, 13, 11, 0)");
+
+      ctx.fillStyle = radialGrad;
+      ctx.fillRect(0, 0, width, height);
+
+      // Secondary warmer ambient bloom (hairline amber/umber warmth)
+      const amberGrad = ctx.createRadialGradient(
+        width >= 1024 ? width * 0.78 : width * 0.65,
+        height * 0.28,
+        10,
+        width >= 1024 ? width * 0.78 : width * 0.65,
+        height * 0.28,
+        Math.min(width, height) * 0.45
+      );
+      amberGrad.addColorStop(0, "rgba(242, 237, 226, 0.04)");
+      amberGrad.addColorStop(1, "rgba(14, 13, 11, 0)");
+      ctx.fillStyle = amberGrad;
+      ctx.fillRect(0, 0, width, height);
+
+      // 2. Center and scale of the 3D figure
+      // Frames the hero heading and specimen catalog card
+      const cx = width >= 1024 ? width * 0.62 : width * 0.5;
+      const cy = height >= 768 ? height * 0.45 : height * 0.38;
+      const scale = Math.min(width, height) * (width >= 1024 ? 0.58 : 0.52);
       const fov = 3.8;
 
-      // Smoothly rotate the 3D figure with subtle cursor tilt
-      const rotX = 0.52 + mouseY * 0.16 + Math.sin(t * 0.28) * 0.06;
-      const rotY = -0.34 + mouseX * 0.22 + Math.cos(t * 0.22) * 0.09;
-      const rotZ = -0.18 + Math.sin(t * 0.17) * 0.04;
+      // 3D rotations with soft damped mouse tilt
+      const rotX = 0.54 + mouseY * 0.2 + Math.sin(t * 0.22) * 0.07;
+      const rotY = -0.44 + mouseX * 0.26 + Math.cos(t * 0.18) * 0.09;
+      const rotZ = -0.2 + Math.sin(t * 0.14) * 0.05;
 
       const cosX = Math.cos(rotX);
       const sinX = Math.sin(rotX);
@@ -90,29 +129,29 @@ export function WarpBackground() {
 
       for (let iu = 0; iu <= U_STEPS; iu += 1) {
         const uNorm = iu / U_STEPS; // 0..1
-        const u = (uNorm - 0.5) * 2.55; // horizontal sweep
+        const u = (uNorm - 0.5) * 2.85; // sweep span
         const row: ProjectedPoint[] = [];
 
-        // Parametric ribbon twist + organic warp wave
-        const twist = u * 0.92 + Math.sin(u * 1.4 - t * 0.65) * 0.34;
+        // Continuous undulating hyperbolic twist
+        const twist = u * 1.08 + Math.sin(u * 1.5 - t * 0.7) * 0.4;
         const cosTwist = Math.cos(twist);
         const sinTwist = Math.sin(twist);
 
         for (let iv = 0; iv <= V_STEPS; iv += 1) {
           const vNorm = iv / V_STEPS;
-          const v = (vNorm - 0.5) * 1.42;
+          const v = (vNorm - 0.5) * 1.65;
 
-          // Base hyperbolic warp + traveling sinusoidal ripple
+          // Organic harmonic ripple
           const ripple =
-            Math.sin(u * 2.4 - t * 0.95) * 0.19 +
-            Math.cos(v * 2.8 + t * 0.72) * 0.11 +
-            Math.sin((u + v) * 1.8 - t * 0.55) * 0.09;
+            Math.sin(u * 2.5 - t * 1.0) * 0.22 +
+            Math.cos(v * 3.0 + t * 0.78) * 0.13 +
+            Math.sin((u * 1.2 + v) * 2.0 - t * 0.58) * 0.1;
 
-          const baseX = u * 1.12;
+          const baseX = u * 1.24;
           const baseY = v * cosTwist - ripple * sinTwist;
-          const baseZ = v * sinTwist + ripple * cosTwist + u * v * 0.28;
+          const baseZ = v * sinTwist + ripple * cosTwist + u * v * 0.3;
 
-          // 3D rotation (Y -> X -> Z)
+          // 3D Matrix rotation: Y -> X -> Z
           const x1 = baseX * cosY + baseZ * sinY;
           const z1 = -baseX * sinY + baseZ * cosY;
 
@@ -122,14 +161,15 @@ export function WarpBackground() {
           const x3 = x1 * cosZ - y2 * sinZ;
           const y3 = x1 * sinZ + y2 * cosZ;
 
-          const perspective = fov / (fov + z2 + 2.35);
+          // Perspective projection
+          const perspective = fov / (fov + z2 + 2.45);
           const px = cx + x3 * scale * perspective;
           const py = cy + y3 * scale * perspective;
 
-          // Crest intensity used for subtle chartreuse highlight on forward ridges
-          const crest = Math.max(0, Math.min(1, (0.65 - z2) * 0.65));
+          // Depth metric (0 in back, 1 in front)
+          const depth = Math.max(0, Math.min(1, (1.2 - z2) / 2.4));
 
-          row.push({ x: px, y: py, z: z2, crest });
+          row.push({ x: px, y: py, z: z2, depth });
         }
         grid.push(row);
       }
@@ -137,26 +177,30 @@ export function WarpBackground() {
       ctx.lineCap = "round";
       ctx.lineJoin = "round";
 
-      // 1. Cross-rib latitude curves (subtle warm umber hairlines)
+      // 3. Cross-latitude curves (subtle calibrated wireframe ribs)
       for (let iu = 0; iu <= U_STEPS; iu += 2) {
         const row = grid[iu];
-        const avgCrest = row[Math.floor(V_STEPS / 2)].crest;
+        const midDepth = row[Math.floor(V_STEPS / 2)].depth;
+
         ctx.beginPath();
         for (let iv = 0; iv <= V_STEPS; iv += 1) {
           const pt = row[iv];
           if (iv === 0) ctx.moveTo(pt.x, pt.y);
           else ctx.lineTo(pt.x, pt.y);
         }
-        const alpha = 0.07 + avgCrest * 0.14;
-        ctx.strokeStyle = `rgba(143, 136, 122, ${alpha.toFixed(3)})`;
-        ctx.lineWidth = 0.75;
+
+        const alpha = 0.14 + midDepth * 0.26;
+        ctx.strokeStyle = `rgba(168, 158, 140, ${alpha.toFixed(3)})`;
+        ctx.lineWidth = 0.85;
         ctx.stroke();
       }
 
-      // 2. Flowing longitude warp lines (warm ivory + electric chartreuse signature edge curves)
+      // 4. Longitudinal warp contour curves
       for (let iv = 0; iv <= V_STEPS; iv += 1) {
-        const isEdge = iv === 0 || iv === V_STEPS;
-        const isAccentSpine = iv === Math.floor(V_STEPS / 2) || iv === 2;
+        const isSpine = iv === Math.floor(V_STEPS / 2);
+        const isSubSpine =
+          iv === Math.floor(V_STEPS / 4) || iv === Math.floor((3 * V_STEPS) / 4);
+        const isOuterEdge = iv === 0 || iv === V_STEPS;
 
         ctx.beginPath();
         for (let iu = 0; iu <= U_STEPS; iu += 1) {
@@ -165,31 +209,79 @@ export function WarpBackground() {
           else ctx.lineTo(pt.x, pt.y);
         }
 
-        if (isAccentSpine) {
-          ctx.strokeStyle = "rgba(200, 242, 61, 0.34)";
-          ctx.lineWidth = 1.1;
-        } else if (isEdge) {
-          ctx.strokeStyle = "rgba(242, 237, 226, 0.24)";
-          ctx.lineWidth = 1.0;
+        if (isSpine) {
+          // Main signature spine: electric chartreuse glow
+          ctx.strokeStyle = "rgba(200, 242, 61, 0.9)";
+          ctx.lineWidth = 2.4;
+          ctx.stroke();
+
+          // Soft bloom glow around the chartreuse spine
+          ctx.beginPath();
+          for (let iu = 0; iu <= U_STEPS; iu += 1) {
+            const pt = grid[iu][iv];
+            if (iu === 0) ctx.moveTo(pt.x, pt.y);
+            else ctx.lineTo(pt.x, pt.y);
+          }
+          ctx.strokeStyle = "rgba(200, 242, 61, 0.28)";
+          ctx.lineWidth = 6.0;
+          ctx.stroke();
+        } else if (isSubSpine) {
+          // Secondary spines: chartreuse-tinted ivory
+          ctx.strokeStyle = "rgba(215, 245, 95, 0.68)";
+          ctx.lineWidth = 1.4;
+          ctx.stroke();
+        } else if (isOuterEdge) {
+          // Outer borders: crisp ivory
+          ctx.strokeStyle = "rgba(242, 237, 226, 0.52)";
+          ctx.lineWidth = 1.25;
+          ctx.stroke();
         } else {
-          ctx.strokeStyle = "rgba(242, 237, 226, 0.11)";
-          ctx.lineWidth = 0.8;
+          // Body warp strands: luminous ivory with depth attenuation
+          const rowNorm = Math.abs(iv - V_STEPS / 2) / (V_STEPS / 2);
+          const alpha = 0.22 + (1 - rowNorm) * 0.3;
+          ctx.strokeStyle = `rgba(242, 237, 226, ${alpha.toFixed(3)})`;
+          ctx.lineWidth = 1.0;
+          ctx.stroke();
         }
-        ctx.stroke();
       }
 
-      // 3. Specimen calibration vertex dots at select intersections
-      for (let iu = 2; iu < U_STEPS; iu += 6) {
-        for (let iv = 0; iv <= V_STEPS; iv += 4) {
+      // 5. Specimen intersection calibration nodes (glowing dots & crosshairs)
+      for (let iu = 2; iu < U_STEPS; iu += 5) {
+        for (let iv = 0; iv <= V_STEPS; iv += 3) {
           const pt = grid[iu][iv];
-          const isChartreuseNode = iv === Math.floor(V_STEPS / 2) && iu % 12 === 2;
-          const radius = isChartreuseNode ? 1.8 : 1.1;
+          const isCenterLine = iv === Math.floor(V_STEPS / 2);
+
           ctx.beginPath();
-          ctx.arc(pt.x, pt.y, radius, 0, Math.PI * 2);
-          ctx.fillStyle = isChartreuseNode
-            ? `rgba(200, 242, 61, ${(0.4 + pt.crest * 0.45).toFixed(3)})`
-            : `rgba(242, 237, 226, ${(0.12 + pt.crest * 0.22).toFixed(3)})`;
-          ctx.fill();
+          if (isCenterLine) {
+            // Chartreuse node with halo
+            ctx.arc(pt.x, pt.y, 2.5, 0, Math.PI * 2);
+            ctx.fillStyle = "rgba(200, 242, 61, 0.95)";
+            ctx.fill();
+
+            ctx.beginPath();
+            ctx.arc(pt.x, pt.y, 6.0, 0, Math.PI * 2);
+            ctx.fillStyle = "rgba(200, 242, 61, 0.25)";
+            ctx.fill();
+
+            // Architectural crosshair ticks on forward-facing center nodes
+            if (pt.depth > 0.65 && iu % 10 === 2) {
+              const tick = 5;
+              ctx.strokeStyle = "rgba(200, 242, 61, 0.75)";
+              ctx.lineWidth = 1;
+              ctx.beginPath();
+              ctx.moveTo(pt.x - tick, pt.y);
+              ctx.lineTo(pt.x + tick, pt.y);
+              ctx.moveTo(pt.x, pt.y - tick);
+              ctx.lineTo(pt.x, pt.y + tick);
+              ctx.stroke();
+            }
+          } else {
+            // Warm ivory specimen dot
+            const radius = 1.2 + pt.depth * 0.6;
+            ctx.arc(pt.x, pt.y, radius, 0, Math.PI * 2);
+            ctx.fillStyle = `rgba(242, 237, 226, ${(0.26 + pt.depth * 0.45).toFixed(3)})`;
+            ctx.fill();
+          }
         }
       }
     }
@@ -203,7 +295,7 @@ export function WarpBackground() {
     }
 
     function tick(timestamp: number) {
-      if (reduceMotion || isSkipped || isTabHidden) {
+      if (reduceMotion || isTabHidden) {
         stopLoop();
         return;
       }
@@ -214,16 +306,16 @@ export function WarpBackground() {
       const dt = Math.min(0.05, (timestamp - lastTimestamp) / 1000);
       lastTimestamp = timestamp;
 
-      time += dt * 0.65;
-      mouseX += (targetMouseX - mouseX) * 0.05;
-      mouseY += (targetMouseY - mouseY) * 0.05;
+      time += dt * 0.7;
+      mouseX += (targetMouseX - mouseX) * 0.06;
+      mouseY += (targetMouseY - mouseY) * 0.06;
 
       drawFrame(time);
       rafId = window.requestAnimationFrame(tick);
     }
 
     function startLoop() {
-      if (reduceMotion || isSkipped || isTabHidden) {
+      if (reduceMotion || isTabHidden) {
         drawFrame(time);
         return;
       }
@@ -258,17 +350,6 @@ export function WarpBackground() {
       }
     }
 
-    // Pause rendering loop when container is skipped by content-visibility: auto
-    const handleContentVisibility = (event: Event) => {
-      const skipped = (event as Event & { skipped?: boolean }).skipped;
-      isSkipped = Boolean(skipped);
-      if (isSkipped) {
-        stopLoop();
-      } else {
-        startLoop();
-      }
-    };
-
     resize();
     drawFrame(time);
     startLoop();
@@ -277,25 +358,6 @@ export function WarpBackground() {
     window.addEventListener("pointermove", handlePointerMove, { passive: true });
     document.addEventListener("visibilitychange", handleVisibilityChange);
     motionQuery.addEventListener("change", handleMotionChange);
-    container.addEventListener(
-      "contentvisibilityautostatechange",
-      handleContentVisibility
-    );
-
-    // Fallback for browsers without content-visibility support
-    let observer: IntersectionObserver | null = null;
-    if (!("contentVisibility" in document.documentElement.style)) {
-      observer = new IntersectionObserver(
-        (entries) => {
-          const visible = entries.some((entry) => entry.isIntersecting);
-          isSkipped = !visible;
-          if (isSkipped) stopLoop();
-          else startLoop();
-        },
-        { rootMargin: "200px" }
-      );
-      observer.observe(container);
-    }
 
     return () => {
       stopLoop();
@@ -303,11 +365,6 @@ export function WarpBackground() {
       window.removeEventListener("pointermove", handlePointerMove);
       document.removeEventListener("visibilitychange", handleVisibilityChange);
       motionQuery.removeEventListener("change", handleMotionChange);
-      container.removeEventListener(
-        "contentvisibilityautostatechange",
-        handleContentVisibility
-      );
-      observer?.disconnect();
     };
   }, []);
 
@@ -316,8 +373,8 @@ export function WarpBackground() {
       ref={containerRef}
       aria-hidden="true"
       className={cn(
-        "warp-bg-shell pointer-events-none fixed inset-x-0 top-0 -z-10 h-[760px] max-h-screen overflow-hidden transition-opacity duration-500",
-        isHome ? "opacity-95" : "opacity-35"
+        "warp-bg-shell pointer-events-none fixed inset-0 z-0 overflow-hidden transition-opacity duration-700",
+        isHome ? "opacity-100" : "opacity-40"
       )}
     >
       <canvas ref={canvasRef} className="block h-full w-full" />

@@ -47,11 +47,13 @@ export default function RootLayout({
         <WarpBackground />
         <MotionProvider>
           <TooltipProvider>
-            <SiteHeader />
-            <main id="main-content" tabIndex={-1} className="flex-1 outline-none">
-              {children}
-            </main>
-            <SiteFooter />
+            <div className="relative z-10 flex min-h-full flex-1 flex-col">
+              <SiteHeader />
+              <main id="main-content" tabIndex={-1} className="flex-1 outline-none">
+                {children}
+              </main>
+              <SiteFooter />
+            </div>
           </TooltipProvider>
         </MotionProvider>
         <Toaster

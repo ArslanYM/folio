@@ -274,20 +274,20 @@ dialog.lightbox-dialog[open] {
   flex-direction: column;
 }
 
-/* 3D warp background container with content-visibility optimization & soft vignette fade */
+/* 3D warp background container with gentle vertical dissolve */
 .warp-bg-shell {
-  content-visibility: auto;
-  contain-intrinsic-size: auto none auto 760px;
-  mask-image: radial-gradient(
-    ellipse 85% 78% at 68% 36%,
-    rgba(0, 0, 0, 1) 25%,
-    rgba(0, 0, 0, 0.55) 62%,
+  mask-image: linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0.95) 0%,
+    rgba(0, 0, 0, 1) 58%,
+    rgba(0, 0, 0, 0.45) 84%,
     rgba(0, 0, 0, 0) 100%
   );
-  -webkit-mask-image: radial-gradient(
-    ellipse 85% 78% at 68% 36%,
-    rgba(0, 0, 0, 1) 25%,
-    rgba(0, 0, 0, 0.55) 62%,
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0.95) 0%,
+    rgba(0, 0, 0, 1) 58%,
+    rgba(0, 0, 0, 0.45) 84%,
     rgba(0, 0, 0, 0) 100%
   );
 }

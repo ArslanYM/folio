@@ -187,3 +187,42 @@
     transition: none;
   }
 }
+
+/* Template card stretched-link & per-template accent glow */
+.tpl-card {
+  position: relative;
+  border-color: color-mix(in srgb, var(--tpl-accent, #C8F23D) 26%, #2E2A21);
+  transition: transform 180ms ease, border-color 180ms ease, box-shadow 220ms ease;
+}
+
+.tpl-card a.card-link::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+}
+
+.tpl-card a:not(.card-link),
+.tpl-card button {
+  position: relative;
+  z-index: 1;
+}
+
+.tpl-card a.card-link:focus-visible {
+  outline: none;
+}
+
+.tpl-card:has(a.card-link:focus-visible) {
+  outline: 2px solid var(--tpl-accent, #C8F23D);
+  outline-offset: 2px;
+}
+
+.tpl-card:hover {
+  border-color: color-mix(in srgb, var(--tpl-accent, #C8F23D) 68%, #2E2A21);
+  box-shadow: 0 12px 36px -14px color-mix(in srgb, var(--tpl-accent, #C8F23D) 35%, transparent);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .tpl-card:hover {
+    transform: translateY(-2px);
+  }
+}

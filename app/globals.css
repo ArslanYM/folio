@@ -225,4 +225,23 @@
   .tpl-card:hover {
     transform: translateY(-2px);
   }
+
+  .swatch-marquee-track {
+    animation: swatch-marquee-scroll 42s linear infinite;
+  }
+
+  .swatch-marquee-track[data-paused="true"],
+  .swatch-marquee:hover .swatch-marquee-track,
+  .swatch-marquee:focus-within .swatch-marquee-track {
+    animation-play-state: paused;
+  }
+}
+
+@keyframes swatch-marquee-scroll {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
 }

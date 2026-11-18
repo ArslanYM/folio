@@ -1,0 +1,22 @@
+{
+  "oryzo-ai": {
+    "platform": ["web"],
+    "mood": ["dark", "editorial", "product"],
+    "tags": ["landing", "3d-object", "museum", "uppercase"]
+  },
+  "orbi": {
+    "platform": ["web"],
+    "mood": ["dark", "playful", "saas"],
+    "tags": ["landing", "waitlist", "rainbow-glow", "handmade"]
+  },
+  "yuga": {
+    "platform": ["web"],
+    "mood": ["bold", "mixed", "editorial"],
+    "tags": ["landing", "brand", "pixel-field", "brutalist"]
+  },
+  "revolut": {
+    "platform": ["web", "mobile web"],
+    "mood": ["premium", "fintech", "mixed"],
+    "tags": ["landing", "product-object", "consumer", "photography"]
+  }
+}

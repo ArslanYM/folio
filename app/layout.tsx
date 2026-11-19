@@ -7,6 +7,7 @@ import { MotionProvider } from "@/components/motion-provider";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
+import { WarpBackground } from "@/components/warp-background";
 import "./globals.css";
 
 const bricolage = Bricolage_Grotesque({
@@ -27,6 +28,15 @@ export const metadata: Metadata = {
   },
   description:
     "Turn any website or screenshot into a DESIGN.md design-system spec ready for AI coding tools.",
+  icons: {
+    icon: [
+      { url: "/icon.svg", type: "image/svg+xml" },
+      { url: "/favicon.ico", sizes: "32x32" },
+    ],
+    apple: [
+      { url: "/apple-icon.png", sizes: "180x180", type: "image/png" },
+    ],
+  },
 };
 
 export default function RootLayout({
@@ -39,17 +49,20 @@ export default function RootLayout({
       lang="en"
       className={`${bricolage.variable} ${GeistSans.variable} ${GeistMono.variable} dark h-full antialiased`}
     >
-      <body className="flex min-h-full flex-col bg-canvas text-foreground">
+      <body className="relative flex min-h-full flex-col bg-canvas text-foreground">
         <a href="#main-content" className="skip-link">
           Skip to main content
         </a>
+        <WarpBackground />
         <MotionProvider>
           <TooltipProvider>
-            <SiteHeader />
-            <main id="main-content" tabIndex={-1} className="flex-1 outline-none">
-              {children}
-            </main>
-            <SiteFooter />
+            <div className="relative z-10 flex min-h-full flex-1 flex-col">
+              <SiteHeader />
+              <main id="main-content" tabIndex={-1} className="flex-1 outline-none">
+                {children}
+              </main>
+              <SiteFooter />
+            </div>
           </TooltipProvider>
         </MotionProvider>
         <Toaster

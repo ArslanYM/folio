@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none">
+  <g transform="translate(-0.8, -0.4) scale(1.2)">
+    <rect
+      x="3"
+      y="4"
+      width="8"
+      height="16"
+      rx="1.75"
+      fill="#2E2A21"
+      stroke="#8F887A"
+      stroke-width="1.2"
+    />
+    <rect
+      x="7"
+      y="4"
+      width="8"
+      height="16"
+      rx="1.75"
+      transform="rotate(14 11 19)"
+      fill="#211E17"
+      stroke="#F2EDE2"
+      stroke-opacity="0.5"
+      stroke-width="1.2"
+    />
+    <rect
+      x="11"
+      y="4"
+      width="8"
+      height="16"
+      rx="1.75"
+      transform="rotate(28 11 19)"
+      fill="#C8F23D"
+    />
+    <circle cx="7" cy="17.5" r="1.1" fill="#0E0D0B" />
+  </g>
+</svg>

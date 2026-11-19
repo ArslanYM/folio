@@ -76,6 +76,11 @@ ${colorRule}
 - In \`## Motion and responsive\`, structure findings into **Observed**, **Transfer**, and **Unknown**. Never invent motion or responsive details that were not observed; place anything unobserved under **Unknown**.
 - Output ONLY valid Markdown. Do not wrap the whole document in a \`\`\`markdown code fence and do not add conversational preamble or postscript.
 
+MANDATORY COMPLETENESS REQUIREMENT:
+- You MUST output all 16 numbered sections below in exact order. DO NOT omit, merge, skip, or truncate any of the 16 headings.
+- Even if specific details for a section (such as Layout, Surfaces, Components, Imagery, or Writing) are not fully observed in the extraction data, DO NOT omit the heading. Output the exact heading and provide a 1–2 sentence specification describing the observed baseline or explicitly declaring unobserved aspects as Unknown.
+- The document is invalid if any of the 16 headings are missing. Continue generating until section 16 "## How to use this guide" is completely written.
+
 REQUIRED DOCUMENT STRUCTURE (include EVERY heading in this order):
 1. \`# <System Name> — <short style tagline>\`
 2. \`## Overview\` (with a concise intro paragraph and \`### Essentials\` containing 5–6 bullets)

@@ -178,6 +178,8 @@ export function GeneratorForm({
         name: file.name || "Pasted screenshot",
         dims: `${resized.width}×${resized.height} JPEG`,
       });
+      setMode("image");
+      toast.success(`Screenshot loaded: ${file.name || "Image"} (${resized.width}×${resized.height})`);
     } catch {
       const msg = "Could not process that image. Try another PNG or JPEG.";
       setImageError(msg);
@@ -198,7 +200,6 @@ export function GeneratorForm({
             e.preventDefault();
             setMode("image");
             void processImageFile(file);
-            toast.success("Pasted screenshot from clipboard");
           }
           break;
         }
@@ -214,6 +215,7 @@ export function GeneratorForm({
     setIsDragging(false);
     const file = e.dataTransfer.files?.[0];
     if (file) {
+      setMode("image");
       void processImageFile(file);
     }
   }
@@ -226,10 +228,14 @@ export function GeneratorForm({
       const check = normalizeInputUrl(urlValue);
       if (!check.valid || !check.normalized) {
         setUrlError(check.error ?? "Invalid URL.");
+        toast.error(check.error ?? "Enter a valid website URL.");
         return;
       }
       setUrlError(null);
       setUrlValue(check.normalized);
+      toast.loading(`Fetching ${check.normalized} & extracting styles...`, {
+        id: "generator-status",
+      });
       onSubmit({
         mode: "url",
         url: check.normalized,
@@ -238,10 +244,15 @@ export function GeneratorForm({
       });
     } else {
       if (!imageDataUrl) {
-        setImageError("Upload, drop, or paste a screenshot first.");
+        const msg = "Upload, drop, or paste a screenshot first.";
+        setImageError(msg);
+        toast.error(msg);
         return;
       }
       setImageError(null);
+      toast.loading("Analyzing screenshot & extracting styles...", {
+        id: "generator-status",
+      });
       onSubmit({
         mode: "image",
         imageDataUrl,

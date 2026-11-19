@@ -1,6 +1,6 @@
 "use client";
 
-import { AlertTriangle, Check, RefreshCw } from "lucide-react";
+import { AlertTriangle, Check, Loader2, RefreshCw } from "lucide-react";
 import type { ProgressStepId } from "@/lib/generate-protocol";
 import { cn } from "@/lib/utils";
 
@@ -16,21 +16,58 @@ export interface ProgressStepsProps {
 interface StepDef {
   id: ProgressStepId;
   label: string;
+  description: string;
 }
 
 const URL_STEPS: readonly StepDef[] = [
-  { id: "fetching-page", label: "Fetching page" },
-  { id: "reading-styles", label: "Reading styles" },
-  { id: "asking-model", label: "Asking the model" },
-  { id: "writing-spec", label: "Writing spec" },
-  { id: "validating", label: "Validating" },
+  {
+    id: "fetching-page",
+    label: "Fetching page",
+    description: "Safely retrieving HTML and linked CSS stylesheets...",
+  },
+  {
+    id: "reading-styles",
+    label: "Reading styles",
+    description: "Extracting CSS variables, color frequencies & font stacks...",
+  },
+  {
+    id: "asking-model",
+    label: "Asking the model",
+    description: "Connecting to AI model to structure 16-section design spec...",
+  },
+  {
+    id: "writing-spec",
+    label: "Writing spec",
+    description: "Streaming design tokens, typography, and section recipes...",
+  },
+  {
+    id: "validating",
+    label: "Validating",
+    description: "Checking required sections and generating Quick Start code...",
+  },
 ];
 
 const IMAGE_STEPS: readonly StepDef[] = [
-  { id: "reading-screenshot", label: "Reading screenshot" },
-  { id: "asking-model", label: "Asking the model" },
-  { id: "writing-spec", label: "Writing spec" },
-  { id: "validating", label: "Validating" },
+  {
+    id: "reading-screenshot",
+    label: "Reading screenshot",
+    description: "Preprocessing image for multimodal vision extraction...",
+  },
+  {
+    id: "asking-model",
+    label: "Asking the model",
+    description: "Connecting to AI model to structure 16-section design spec...",
+  },
+  {
+    id: "writing-spec",
+    label: "Writing spec",
+    description: "Streaming design tokens, typography, and section recipes...",
+  },
+  {
+    id: "validating",
+    label: "Validating",
+    description: "Checking required sections and generating Quick Start code...",
+  },
 ];
 
 export function ProgressSteps({
@@ -49,36 +86,63 @@ export function ProgressSteps({
     ? steps.findIndex((s) => s.id === effectiveStep)
     : -1;
 
+  const currentStepDef = activeIdx !== -1 ? steps[activeIdx] : null;
+
   return (
     <div className="flex flex-col gap-3">
       {(currentStep || isComplete) && (
         <div
           aria-label="Generation progress"
-          className="rounded-lg border border-border bg-surface p-4"
+          className="rounded-lg border border-border/80 bg-surface/90 p-4 shadow-lg backdrop-blur-sm sm:p-5"
         >
-          <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-            <span className="font-mono text-[11px] uppercase tracking-wider text-muted-foreground">
-              {isComplete ? "Generation complete" : "Pipeline status"}
-            </span>
+          {/* Header & animated indicator */}
+          <div className="mb-3.5 flex flex-wrap items-center justify-between gap-2 border-b border-border/60 pb-3">
+            <div className="flex items-center gap-2">
+              {isComplete ? (
+                <div className="flex h-5 w-5 items-center justify-center rounded-full bg-accent/20 text-accent">
+                  <Check className="h-3.5 w-3.5" aria-hidden="true" />
+                </div>
+              ) : (
+                <Loader2
+                  className="h-4 w-4 animate-spin text-accent"
+                  aria-hidden="true"
+                />
+              )}
+              <span className="font-mono text-xs font-semibold uppercase tracking-wider text-foreground">
+                {isComplete
+                  ? "Generation complete"
+                  : currentStepDef?.label || "Pipeline processing"}
+              </span>
+            </div>
+
             <div className="flex flex-wrap items-center gap-2">
               {isSwitchingModels && !isComplete && (
-                <span className="inline-flex items-center gap-1.5 rounded border border-accent/40 bg-accent/10 px-2 py-0.5 font-mono text-[11px] text-accent">
+                <span className="inline-flex items-center gap-1.5 rounded border border-accent/40 bg-accent/15 px-2 py-0.5 font-mono text-[11px] font-medium text-accent">
                   <RefreshCw
                     className="h-3 w-3 motion-safe:animate-spin"
                     aria-hidden="true"
                   />
-                  Switching models...
+                  Switching to fallback model...
                 </span>
               )}
               {activeModel && (
-                <span className="rounded border border-border bg-canvas px-2 py-0.5 font-mono text-[11px] text-muted-foreground">
+                <span className="rounded border border-border bg-canvas px-2.5 py-0.5 font-mono text-[11px] text-muted-foreground">
                   {activeModel}
                 </span>
               )}
             </div>
           </div>
 
-          <ol className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:items-center sm:gap-3">
+          {/* Active step explanation text */}
+          {!isComplete && currentStepDef && (
+            <div className="mb-3 flex items-center gap-2 text-xs text-muted-foreground">
+              <span className="inline-block h-1.5 w-1.5 rounded-full bg-accent animate-pulse" />
+              <span>{currentStepDef.description}</span>
+            </div>
+          )}
+
+          {/* Steps checklist */}
+          <ol className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:items-center sm:gap-2.5">
             {steps.map((step, idx) => {
               const done = isComplete || (activeIdx !== -1 && idx < activeIdx);
               const active = !isComplete && idx === activeIdx;
@@ -88,14 +152,14 @@ export function ProgressSteps({
                   key={step.id}
                   aria-current={active ? "step" : undefined}
                   className={cn(
-                    "flex items-center gap-2 rounded-md border px-2.5 py-1.5 font-mono text-xs transition-colors",
+                    "flex items-center gap-2 rounded-md border px-2.5 py-1.5 font-mono text-xs transition-all",
                     done &&
                       "border-border bg-canvas/80 text-foreground",
                     active &&
-                      "border-accent/60 bg-accent/10 text-accent font-medium",
+                      "border-accent/70 bg-accent/10 text-accent font-medium shadow-sm ring-1 ring-accent/30",
                     !done &&
                       !active &&
-                      "border-border/50 bg-canvas/30 text-muted-foreground/60"
+                      "border-border/40 bg-canvas/20 text-muted-foreground/50"
                   )}
                 >
                   {done ? (
@@ -106,7 +170,7 @@ export function ProgressSteps({
                   ) : active ? (
                     <span
                       aria-hidden="true"
-                      className="inline-block h-2 w-2 shrink-0 rounded-full bg-accent motion-safe:animate-pulse"
+                      className="inline-block h-2 w-2 shrink-0 rounded-full bg-accent motion-safe:animate-ping"
                     />
                   ) : (
                     <span

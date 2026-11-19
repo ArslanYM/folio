@@ -67,14 +67,17 @@ export default function RootLayout({
         </MotionProvider>
         <Toaster
           theme="dark"
-          position="bottom-right"
+          position="top-center"
+          richColors
+          closeButton
           containerAriaLabel="Notifications"
           toastOptions={{
             style: {
               background: "#17150F",
-              border: "1px solid #2E2A21",
+              border: "1px solid #3E382B",
               color: "#F2EDE2",
               fontFamily: "var(--font-geist-sans)",
+              boxShadow: "0 10px 30px -10px rgba(0,0,0,0.8), 0 0 1px 1px rgba(212,255,0,0.15)",
             },
           }}
         />

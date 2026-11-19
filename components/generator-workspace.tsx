@@ -9,7 +9,13 @@ import {
   useSyncExternalStore,
 } from "react";
 import { useSearchParams } from "next/navigation";
-import { AlertCircle, AlertTriangle, Download, RotateCcw, Square } from "lucide-react";
+import {
+  AlertCircle,
+  AlertTriangle,
+  Download,
+  RotateCcw,
+  Square,
+} from "lucide-react";
 import { toast } from "sonner";
 import { CopyButton } from "@/components/copy-button";
 import { FileTabBar } from "@/components/file-tab";
@@ -29,6 +35,7 @@ import {
   subscribeRecentGenerations,
   type RecentGeneration,
 } from "@/components/recent-drawer";
+import { TemplatePreview } from "@/components/template-preview";
 import { Button } from "@/components/ui/button";
 import type {
   GenerateStreamEvent,
@@ -36,6 +43,9 @@ import type {
 } from "@/lib/generate-protocol";
 import { buildLandingPagePrompt } from "@/lib/prompts/landing-page";
 import { slugifyHeading } from "@/lib/slug";
+import { parseTemplateMarkdown, type ParsedTemplate } from "@/lib/template-parser";
+
+type WorkspaceTab = "preview" | "rendered" | "raw" | "tokens";
 
 function extractTitleFromMarkdown(markdown: string, fallback: string): string {
   const match = /^#\s+(.+)$/m.exec(markdown);
@@ -43,6 +53,12 @@ function extractTitleFromMarkdown(markdown: string, fallback: string): string {
   const raw = match[1].trim();
   const titlePart = raw.split(" — ")[0]?.trim();
   return titlePart || fallback;
+}
+
+function extractQuickStartSection(markdown: string): string {
+  const match = /## Quick Start([\s\S]*?)(?=## |$)/i.exec(markdown);
+  if (match) return match[1].trim();
+  return "";
 }
 
 export function GeneratorWorkspace() {
@@ -73,7 +89,7 @@ export function GeneratorWorkspace() {
     retryAfter?: number;
   } | null>(null);
 
-  const [viewTab, setViewTab] = useState<"rendered" | "raw">("rendered");
+  const [viewTab, setViewTab] = useState<WorkspaceTab>("preview");
   const [recentOpen, setRecentOpen] = useState(false);
   const recentItems = useSyncExternalStore(
     subscribeRecentGenerations,
@@ -90,6 +106,21 @@ export function GeneratorWorkspace() {
 
   const landingPagePrompt = useMemo(
     () => (markdown ? buildLandingPagePrompt(markdown) : ""),
+    [markdown]
+  );
+
+  const parsedTemplate: ParsedTemplate | null = useMemo(() => {
+    if (!markdown || markdown.trim().length < 60) return null;
+    try {
+      const parsed = parseTemplateMarkdown(markdown, "generated-spec");
+      return parsed;
+    } catch {
+      return null;
+    }
+  }, [markdown]);
+
+  const quickStartCode = useMemo(
+    () => (markdown ? extractQuickStartSection(markdown) : ""),
     [markdown]
   );
 
@@ -112,6 +143,14 @@ export function GeneratorWorkspace() {
     setMissingSections([]);
     setColorsEstimated(payload.mode === "image");
     setErrorState(null);
+
+    // Initial toast notification
+    toast.loading(
+      payload.mode === "url"
+        ? `Fetching ${payload.url || "site"} & extracting design tokens...`
+        : "Analyzing screenshot with vision model...",
+      { id: "generator-status" }
+    );
 
     try {
       const response = await fetch("/api/generate", {
@@ -154,6 +193,7 @@ export function GeneratorWorkspace() {
           retryAfter,
         });
         setCurrentStep(null);
+        toast.error(message, { id: "generator-status", duration: 5000 });
         return;
       }
 
@@ -163,6 +203,7 @@ export function GeneratorWorkspace() {
           message: "No stream received from the server.",
           retryable: true,
         });
+        toast.error("No stream received from server", { id: "generator-status" });
         return;
       }
 
@@ -174,9 +215,30 @@ export function GeneratorWorkspace() {
           case "status":
             if (event.step === "switching-models") {
               setIsSwitchingModels(true);
+              toast.info("Switching to fallback model on OpenRouter...", {
+                id: "generator-status",
+              });
             }
             if (!event.heartbeat) {
               setCurrentStep(event.step);
+              if (event.step === "reading-styles") {
+                toast.loading("Extracting CSS variables, color frequencies & font stacks...", {
+                  id: "generator-status",
+                });
+              } else if (event.step === "asking-model") {
+                toast.loading(
+                  `Connecting to model ${event.model ? `(${event.model})` : ""}...`,
+                  { id: "generator-status" }
+                );
+              } else if (event.step === "writing-spec") {
+                toast.loading("Streaming 16-section DESIGN.md specification...", {
+                  id: "generator-status",
+                });
+              } else if (event.step === "validating") {
+                toast.loading("Validating spec tokens & generating Quick Start...", {
+                  id: "generator-status",
+                });
+              }
             }
             if (event.model) {
               setActiveModel(event.model);
@@ -223,6 +285,11 @@ export function GeneratorWorkspace() {
               missing: event.missing,
               colorsEstimated: event.colorsEstimated,
             });
+
+            toast.success("DESIGN.md and live visual preview generated!", {
+              id: "generator-status",
+              duration: 4000,
+            });
             break;
           }
 
@@ -233,6 +300,10 @@ export function GeneratorWorkspace() {
               retryAfter: event.retryAfter,
             });
             setCurrentStep(null);
+            toast.error(event.message, {
+              id: "generator-status",
+              duration: 5000,
+            });
             break;
         }
       };
@@ -267,15 +338,17 @@ export function GeneratorWorkspace() {
       }
     } catch (err) {
       if (err instanceof DOMException && err.name === "AbortError") {
-        toast.info("Generation stopped");
+        toast.info("Generation stopped", { id: "generator-status" });
       } else {
+        const msg =
+          err instanceof Error
+            ? err.message
+            : "Network error while contacting /api/generate.";
         setErrorState({
-          message:
-            err instanceof Error
-              ? err.message
-              : "Network error while contacting /api/generate.",
+          message: msg,
           retryable: true,
         });
+        toast.error(msg, { id: "generator-status", duration: 5000 });
       }
       setCurrentStep(null);
     } finally {
@@ -287,6 +360,7 @@ export function GeneratorWorkspace() {
     abortRef.current?.abort();
     setIsGenerating(false);
     setCurrentStep(null);
+    toast.info("Generation stopped", { id: "generator-status" });
   }
 
   function handleRegenerate() {
@@ -321,6 +395,7 @@ export function GeneratorWorkspace() {
     setMissingSections(item.missing ?? []);
     setColorsEstimated(Boolean(item.colorsEstimated));
     setIsComplete(true);
+    setViewTab("preview");
     toast.success(`Loaded ${item.title}`);
   }
 
@@ -337,7 +412,7 @@ export function GeneratorWorkspace() {
           </h1>
           <p className="mt-2 text-sm text-muted-foreground">
             Paste a public URL or drop a screenshot, choose a target, and stream
-            a validated spec with deterministic tokens.
+            a validated spec with deterministic tokens and a live visual preview.
           </p>
         </div>
 
@@ -358,11 +433,12 @@ export function GeneratorWorkspace() {
         initialMode={initialMode}
         initialUrl={initialUrl}
         isGenerating={isGenerating}
+        currentStep={currentStep}
         onSubmit={runGeneration}
         onStop={handleStop}
       />
 
-      {/* Progress & Notice */}
+      {/* Progress & Live Pipeline Status */}
       <ProgressSteps
         mode={activeMode}
         currentStep={currentStep}
@@ -372,7 +448,7 @@ export function GeneratorWorkspace() {
         notice={notice}
       />
 
-      {/* Error banner (always actionable, never a blank screen) */}
+      {/* Error banner */}
       {errorState && (
         <div
           role="alert"
@@ -408,7 +484,7 @@ export function GeneratorWorkspace() {
         </div>
       )}
 
-      {/* Missing sections validation banner (output stays visible!) */}
+      {/* Missing sections validation banner */}
       {isComplete && missingSections.length > 0 && (
         <div
           role="status"
@@ -440,18 +516,20 @@ export function GeneratorWorkspace() {
         </div>
       )}
 
-      {/* Output panel */}
+      {/* Output Panel with Live Visual Preview & Tokens */}
       {(markdown || isGenerating) && (
         <section
           aria-label="Generated DESIGN.md output"
-          className="overflow-hidden rounded-lg border border-border bg-surface"
+          className="overflow-hidden rounded-lg border border-border bg-surface shadow-xl"
         >
           <FileTabBar
             ariaLabel="Output view mode"
             activeId={viewTab}
-            onChange={setViewTab}
+            onChange={(tab) => setViewTab(tab as WorkspaceTab)}
             tabs={[
-              { id: "rendered", label: "Rendered", badge: "DESIGN.md" },
+              { id: "preview", label: "Live Preview", badge: "Visual" },
+              { id: "rendered", label: "DESIGN.md", badge: "Spec" },
+              { id: "tokens", label: "Quick Start", badge: "CSS / @theme" },
               { id: "raw", label: "Raw", badge: ".md" },
             ]}
             rightSlot={
@@ -520,21 +598,134 @@ export function GeneratorWorkspace() {
             }
           />
 
+          {/* Extracted tokens specimen header when available */}
+          {parsedTemplate && parsedTemplate.palette.length > 0 && (
+            <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border/80 bg-canvas/60 px-4 py-2.5 text-xs sm:px-6">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="font-mono text-[11px] uppercase tracking-wider text-muted-foreground">
+                  Extracted Palette:
+                </span>
+                <div className="flex flex-wrap items-center gap-1.5">
+                  {parsedTemplate.palette.slice(0, 8).map((swatch) => (
+                    <button
+                      key={swatch.hex}
+                      type="button"
+                      onClick={() => {
+                        void navigator.clipboard.writeText(swatch.hex);
+                        toast.success(`Copied ${swatch.hex}`);
+                      }}
+                      title={`${swatch.name || "Color"}: ${swatch.hex} (Click to copy)`}
+                      className="group flex items-center gap-1.5 rounded border border-border/80 bg-surface px-2 py-0.5 font-mono text-[11px] transition-colors hover:border-foreground/40"
+                    >
+                      <span
+                        aria-hidden="true"
+                        className="h-2.5 w-2.5 rounded-full border border-white/10"
+                        style={{ backgroundColor: swatch.hex }}
+                      />
+                      <span className="text-muted-foreground group-hover:text-foreground">
+                        {swatch.hex}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {parsedTemplate.fonts.length > 0 && (
+                <div className="flex items-center gap-1.5 font-mono text-[11px] text-muted-foreground">
+                  <span>Fonts:</span>
+                  <span className="font-medium text-foreground">
+                    {parsedTemplate.fonts.map((f) => f.name).join(", ")}
+                  </span>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Main content body */}
           <div
             role="tabpanel"
             aria-labelledby={`tab-${viewTab}`}
             className="min-h-64 p-5 sm:p-7"
           >
             {!markdown && isGenerating ? (
-              <div className="flex items-center gap-2 font-mono text-xs text-muted-foreground">
-                <span
-                  aria-hidden="true"
-                  className="inline-block h-3.5 w-2 bg-accent motion-safe:animate-pulse"
-                />
-                <span>Waiting for the first tokens...</span>
+              <div className="flex flex-col gap-5 py-8 animate-pulse">
+                <div className="flex items-center gap-3">
+                  <span
+                    aria-hidden="true"
+                    className="inline-block h-2.5 w-2.5 rounded-full bg-accent motion-safe:animate-ping"
+                  />
+                  <span className="font-mono text-xs font-medium text-foreground">
+                    Extracting design language &amp; generating live visual preview...
+                  </span>
+                </div>
+
+                <div className="flex flex-col gap-3 rounded-lg border border-border/80 bg-canvas/40 p-5">
+                  <div className="h-6 w-2/5 rounded bg-surface/80" />
+                  <div className="h-4 w-3/5 rounded bg-surface/60" />
+                  <div className="mt-4 flex gap-2">
+                    <div className="h-9 w-28 rounded bg-accent/20" />
+                    <div className="h-9 w-28 rounded bg-surface/70" />
+                  </div>
+                  <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-3">
+                    <div className="h-24 rounded border border-border/60 bg-surface/40" />
+                    <div className="h-24 rounded border border-border/60 bg-surface/40" />
+                    <div className="h-24 rounded border border-border/60 bg-surface/40" />
+                  </div>
+                </div>
               </div>
+            ) : viewTab === "preview" ? (
+              parsedTemplate ? (
+                <div className="flex flex-col gap-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="font-mono text-[11px] uppercase tracking-wider text-muted-foreground">
+                        Live Component Mockup
+                      </p>
+                      <h3 className="font-display text-lg font-semibold text-foreground">
+                        Rendered with extracted tokens
+                      </h3>
+                    </div>
+                    <span className="font-mono text-xs text-muted-foreground">
+                      Theme:{" "}
+                      <strong className="text-foreground">
+                        {parsedTemplate.theme}
+                      </strong>
+                    </span>
+                  </div>
+
+                  <TemplatePreview template={parsedTemplate} />
+                </div>
+              ) : (
+                <MdViewer markdown={markdown} isStreaming={isGenerating} />
+              )
             ) : viewTab === "rendered" ? (
               <MdViewer markdown={markdown} isStreaming={isGenerating} />
+            ) : viewTab === "tokens" ? (
+              <div className="flex flex-col gap-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="font-display text-base font-semibold text-foreground">
+                      Quick Start Tokens
+                    </h3>
+                    <p className="text-xs text-muted-foreground">
+                      Deterministic CSS custom properties and Tailwind v4 @theme
+                      block.
+                    </p>
+                  </div>
+                  {quickStartCode && (
+                    <CopyButton
+                      text={quickStartCode}
+                      label="Copy Tokens"
+                      toastMessage="Copied Quick Start tokens"
+                      size="xs"
+                    />
+                  )}
+                </div>
+
+                <pre className="overflow-x-auto rounded-md border border-border bg-canvas p-4 font-mono text-xs leading-relaxed text-foreground/90">
+                  <code>{quickStartCode || "Quick Start tokens will appear here after generation completes."}</code>
+                </pre>
+              </div>
             ) : (
               <pre className="overflow-x-auto rounded-md border border-border bg-canvas p-4 font-mono text-xs leading-relaxed text-foreground/90">
                 <code>{markdown}</code>

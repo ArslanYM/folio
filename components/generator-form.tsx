@@ -7,13 +7,14 @@ import {
   type DragEvent,
   type FormEvent,
 } from "react";
-import { Globe, ImageUp, Square, Upload, X } from "lucide-react";
+import { Globe, ImageUp, Loader2, Square, Upload, X } from "lucide-react";
 import { toast } from "sonner";
 import { FileTabBar } from "@/components/file-tab";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import type { ProgressStepId } from "@/lib/generate-protocol";
 import {
   GENERATION_TARGETS,
   type GenerationTarget,
@@ -39,6 +40,7 @@ export interface GeneratorFormProps {
   initialMode?: "url" | "image";
   initialUrl?: string;
   isGenerating: boolean;
+  currentStep?: ProgressStepId | null;
   onSubmit: (payload: GeneratorSubmitPayload) => void;
   onStop: () => void;
 }
@@ -109,6 +111,7 @@ export function GeneratorForm({
   initialMode = "url",
   initialUrl = "",
   isGenerating,
+  currentStep,
   onSubmit,
   onStop,
 }: GeneratorFormProps) {
@@ -175,6 +178,8 @@ export function GeneratorForm({
         name: file.name || "Pasted screenshot",
         dims: `${resized.width}×${resized.height} JPEG`,
       });
+      setMode("image");
+      toast.success(`Screenshot loaded: ${file.name || "Image"} (${resized.width}×${resized.height})`);
     } catch {
       const msg = "Could not process that image. Try another PNG or JPEG.";
       setImageError(msg);
@@ -195,7 +200,6 @@ export function GeneratorForm({
             e.preventDefault();
             setMode("image");
             void processImageFile(file);
-            toast.success("Pasted screenshot from clipboard");
           }
           break;
         }
@@ -211,6 +215,7 @@ export function GeneratorForm({
     setIsDragging(false);
     const file = e.dataTransfer.files?.[0];
     if (file) {
+      setMode("image");
       void processImageFile(file);
     }
   }
@@ -223,10 +228,14 @@ export function GeneratorForm({
       const check = normalizeInputUrl(urlValue);
       if (!check.valid || !check.normalized) {
         setUrlError(check.error ?? "Invalid URL.");
+        toast.error(check.error ?? "Enter a valid website URL.");
         return;
       }
       setUrlError(null);
       setUrlValue(check.normalized);
+      toast.loading(`Fetching ${check.normalized} & extracting styles...`, {
+        id: "generator-status",
+      });
       onSubmit({
         mode: "url",
         url: check.normalized,
@@ -235,10 +244,15 @@ export function GeneratorForm({
       });
     } else {
       if (!imageDataUrl) {
-        setImageError("Upload, drop, or paste a screenshot first.");
+        const msg = "Upload, drop, or paste a screenshot first.";
+        setImageError(msg);
+        toast.error(msg);
         return;
       }
       setImageError(null);
+      toast.loading("Analyzing screenshot & extracting styles...", {
+        id: "generator-status",
+      });
       onSubmit({
         mode: "image",
         imageDataUrl,
@@ -497,15 +511,37 @@ export function GeneratorForm({
 
           <div className="flex items-center gap-2">
             {isGenerating ? (
-              <Button
-                type="button"
-                variant="outline"
-                onClick={onStop}
-                className="h-10 cursor-pointer gap-2 border-destructive/60 bg-destructive/10 px-4 text-destructive hover:bg-destructive/20"
-              >
-                <Square className="h-3.5 w-3.5 fill-current" aria-hidden="true" />
-                Stop
-              </Button>
+              <>
+                <Button
+                  type="button"
+                  disabled
+                  className="h-10 cursor-wait gap-2 bg-accent/85 px-4 text-sm font-semibold text-accent-foreground opacity-95"
+                >
+                  <Loader2 className="h-4 w-4 animate-spin text-accent-foreground" aria-hidden="true" />
+                  <span>
+                    {currentStep === "fetching-page"
+                      ? "Fetching site..."
+                      : currentStep === "reading-styles"
+                        ? "Extracting tokens..."
+                        : currentStep === "asking-model"
+                          ? "Asking AI model..."
+                          : currentStep === "switching-models"
+                            ? "Switching model..."
+                            : currentStep === "writing-spec"
+                              ? "Drafting spec..."
+                              : "Extracting DESIGN.md..."}
+                  </span>
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={onStop}
+                  className="h-10 cursor-pointer gap-1.5 border-destructive/50 bg-destructive/10 px-3 text-xs font-medium text-destructive hover:bg-destructive/20"
+                >
+                  <Square className="h-3 w-3 fill-current" aria-hidden="true" />
+                  Stop
+                </Button>
+              </>
             ) : (
               <Button
                 type="submit"

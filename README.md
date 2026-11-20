@@ -1,88 +1,156 @@
+<div align="center">
+
 # Swatchbook
 
-Turn any website or screenshot into a `DESIGN.md` — a complete design-system spec (colors, typography, spacing, components, section recipes, writing voice, do's and don'ts, and deterministic CSS/Tailwind v4 tokens) ready to paste into Copilot, Cursor, or Claude Code.
+**Turn any website or screenshot into a production-ready `DESIGN.md` spec for AI coding tools.**
 
-## Two Ways In
+Extract real colors, typography, spacing, and component patterns — deterministically compiled into Tailwind v4 `@theme` and CSS `:root` tokens.
 
-1. **Browse Templates (`/templates`):** Pick a ready-made design system, click any paint-chip swatch to copy its hex, inspect real/substituted font specimens and a token-driven landing-page preview, copy or download its `DESIGN.md`, or copy a ready-made **"build a landing page"** prompt.
-2. **Generate (`/generate`):** Paste a public website URL or upload/drop/paste a screenshot, choose a target (`desktop-web`, `mobile-web`, `ios`, `android`, `landing-page`, `dashboard`), and stream a validated `DESIGN.md` with deterministic `:root` and Tailwind v4 `@theme` blocks.
+[![Next.js 16](https://img.shields.io/badge/Next.js-16.4-black?style=for-the-badge&logo=next.js)](https://nextjs.org/)
+[![Tailwind CSS v4](https://img.shields.io/badge/Tailwind-v4-06B6D4?style=for-the-badge&logo=tailwindcss&logoColor=white)](https://tailwindcss.com/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.0-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-C8F23D?style=for-the-badge&labelColor=17150F&color=C8F23D)](./LICENSE)
+[![PRs Welcome](https://img.shields.io/badge/PRs-Welcome-brightgreen?style=for-the-badge)](./CONTRIBUTING.md)
 
-## Requirements
+<br />
 
-- **Node.js 20+**
-- **pnpm 10+**
-- An [OpenRouter](https://openrouter.ai/) API key (only needed for `/generate`; `/`, `/templates`, and `/templates/[slug]` work completely offline without keys)
+[Quick Start](#-quick-start) •
+[Features](#-features) •
+[How It Works](#-how-it-works) •
+[Contribute a Template](#-contribute-a-design-template-zero-code-changes) •
+[Guides](#-documentation--guides)
 
-## Quick Start
+<br />
+
+<img src="./assets/hero-preview.jpg" alt="Swatchbook — Website & Screenshot to DESIGN.md spec generator" width="100%" />
+
+</div>
+
+---
+
+## ✨ Features
+
+When using AI coding assistants like **Cursor**, **Claude Code**, or **GitHub Copilot**, generating UI often results in generic styling unless provided with concrete design tokens.
+
+**Swatchbook** bridges this gap by extracting real design systems from any reference website or screenshot into an exhaustive **`DESIGN.md`** specification:
+
+- ⚡ **URL Token Extraction** — Safely fetches HTML and linked stylesheets with strict SSRF protection, parsing CSS custom properties, hex frequencies, font stacks, border radii, and breakpoints into structured tokens.
+- 👁️ **Screenshot Multimodal Vision** — Upload, drag-and-drop, or paste (`Cmd/Ctrl+V`) any screenshot (PNG, JPEG, WebP) to analyze color palettes, visual hierarchy, and component recipes with multimodal vision AI.
+- 🎨 **Refero-Style Specimen Gallery** — Curated collection of production design systems (Auros Global, Orbi, Oryzo AI, Revolut, Yuga) with interactive swatches, type specimens, and live hover-scroll website previews.
+- 🛠️ **Deterministic Tailwind v4 `@theme`** — CSS `:root` variables and `@theme` blocks are compiled directly in code from extracted tokens — zero hallucinated hex codes.
+- 🌐 **Interactive 3D Parametric Mesh** — 60fps HTML5 Canvas wireframe background reacting smoothly to cursor movement with realistic perspective projection.
+- 📋 **AI-Ready Coding Prompts** — One-click copy "Build a landing page with this spec" prompt tailored for your favorite coding assistant.
+- 📱 **Interactive Lightbox & Live Previews** — Expand full-page website screenshots in an accessible native `<dialog>` lightbox and preview live UI mockups rendered with extracted tokens.
+
+---
+
+## 🚀 How It Works
+
+```text
+  [ Live URL or Screenshot ] 
+              │
+              ▼
+   [ Style & Token Extractor ]  ──>  SSRF-Guarded Fetch + CSS AST Parser
+              │
+              ▼
+    [ AI Spec Architect ]       ──>  Streams validated 16-section DESIGN.md
+              │
+              ▼
+  [ Deterministic Quick Start ] ──>  Compiles exact Tailwind v4 @theme & :root CSS
+              │
+              ▼
+  [ Ready for Cursor / Claude ] ──>  Paste into workspace & ship matching UI
+```
+
+---
+
+## ⚡ Quick Start
+
+### 1. Clone & Install
 
 ```bash
-git clone <repo-url>
+git clone https://github.com/ArslanYM/swatchbook.git
 cd swatchbook
 pnpm install
+```
+
+### 2. Configure Environment
+
+```bash
 cp .env.example .env.local
+```
+
+Edit `.env.local` with your [OpenRouter](https://openrouter.ai/) credentials:
+
+```bash
+OPENROUTER_API_KEY=your_openrouter_api_key
+OPENROUTER_MODEL_TEXT=nvidia/nemotron-3.5-lightning:free
+OPENROUTER_MODEL_VISION=openrouter/free
+OPENROUTER_FALLBACK_MODEL=openrouter/free
+```
+
+> [!NOTE]
+> Browsing templates (`/templates`) and inspecting specimens (`/templates/[slug]`) works **100% offline with zero API keys**. An OpenRouter key is only required for active generation in `/generate`.
+
+### 3. Start Development Server
+
+```bash
 pnpm dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000).
+Open [http://localhost:3000](http://localhost:3000) to view the application.
 
-## Environment Variables
+---
 
-Copy `.env.example` to `.env.local` and configure:
+## 🤝 Contribute a Design Template (Zero Code Changes!)
 
-| Variable | Required | Description |
-| --- | --- | --- |
-| `OPENROUTER_API_KEY` | For `/generate` | Your OpenRouter API key |
-| `OPENROUTER_MODEL_TEXT` | For URL mode | Any capable text model ID from [openrouter.ai/models](https://openrouter.ai/models) |
-| `OPENROUTER_MODEL_VISION` | For screenshot mode | Any model ID from [openrouter.ai/models](https://openrouter.ai/models) filtered by **"image input"** |
-| `OPENROUTER_FALLBACK_MODEL` | Optional | Fallback model tried automatically if the primary fails or rate-limits |
-| `NEXT_PUBLIC_APP_URL` | Optional | Sent as `HTTP-Referer` to OpenRouter (`X-Title` is always `"Swatchbook"`; default `http://localhost:3000`) |
-| `ENABLE_SCREENSHOT` | Optional | Reserved stub in `lib/screenshot.ts` for future Playwright capture (default `false`) |
-| `RATE_LIMIT_PER_HOUR` | Optional | Per-IP hourly request cap on `/api/generate` (default `20`) |
+Have a favorite website or design system you love? Adding it to Swatchbook takes less than 5 minutes:
 
-> **Picking models:** Browse [openrouter.ai/models](https://openrouter.ai/models) and copy any model slug into `.env.local`. Filter by **"image input"** when choosing `OPENROUTER_MODEL_VISION`. Free models on OpenRouter are slower and frequently rate-limited — setting `OPENROUTER_FALLBACK_MODEL` is recommended.
+1. Create a markdown file: `content/templates/<slug>.md`
+2. Follow the 16-section `DESIGN.md` spec structure (colors, typography, components, do's & don'ts).
+3. Optionally add preview screenshots to `public/previews/<slug>/`.
+4. Open a Pull Request!
 
-## Adding a Template (Zero Code Changes)
+👉 **Read the full [Template Contribution Guide](./CONTRIBUTING.md#contributing-a-design-template)** to get started.
 
-1. Drop any `.md` file into `content/templates/<slug>.md`.
-2. Optionally add curated `platform`, `mood`, `tags`, `websiteUrl`, and `cardBg` metadata for `<slug>` in `content/templates/templates.meta.json` — or include YAML frontmatter at the top of the `.md` file (frontmatter always takes priority).
-3. **Website previews & hover-scroll animation:**
-   - Drop static screenshots into `public/previews/<slug>/`:
-     - `full.png` / `full.webp` — tall full-page screenshot that smoothly scrolls inside the gallery card on hover
-     - `shot-1.png`, `shot-2.png`, `shot-3.png` — 3-up website showcase shown on the detail page's **Preview** tab (click to expand in a native `<dialog>` lightbox)
-     - `icon.svg` / `icon.png` — optional logo/monogram badge
-   - Or run `pnpm capture-previews` (after `pnpm add -D playwright && pnpm exec playwright install chromium`) to automatically capture `shot-1.png`, `shot-2.png`, `shot-3.png`, and `full.png` for every template with a `websiteUrl`.
-   - Alternatively, drop a static `content/templates/<slug>.preview.html` file to render a custom preview inside a scriptless sandboxed `<iframe sandbox="">`.
-4. Restart or rebuild — the template appears automatically in `/templates` and gets its own `/templates/<slug>` page.
+---
 
-The parser in `lib/templates.ts` tolerates both Format A (ORYZO style) and Format B (Orbi/Yuga/Revolut style), skips malformed hex values (such as a 5-digit `#40372` typo) with a dev-only warning instead of crashing, deduplicates identical hex codes keeping the first occurrence, and never rewrites the raw markdown you copy or download.
+## 🛠️ Tech Stack
 
-## Scripts
+| Layer | Technology |
+| --- | --- |
+| **Framework** | [Next.js 16.4](https://nextjs.org/) (App Router, Turbopack, React 19) |
+| **Styling** | [Tailwind CSS v4](https://tailwindcss.com/) with `@theme inline` & [shadcn/ui](https://ui.shadcn.com/) |
+| **Typography** | Bricolage Grotesque & Geist Font Family |
+| **Animation** | [Framer Motion](https://www.framer-motion.com/) & Canvas 3D Parametric Mesh |
+| **LLM Provider** | [Vercel AI SDK](https://sdk.vercel.ai/) with OpenRouter |
+| **Testing** | [Vitest](https://vitest.dev/) (30/30 unit & route integration tests) |
+
+---
+
+## 💻 Available Scripts
 
 ```bash
-pnpm dev        # Start Next.js 16 dev server (Turbopack)
-pnpm build      # Production build
-pnpm start      # Start production server
-pnpm lint       # Run ESLint
-pnpm typecheck  # Run TypeScript strict check
-pnpm test       # Run Vitest unit & route tests
+pnpm dev              # Start development server with Turbopack
+pnpm build            # Build optimized production bundle
+pnpm start            # Run production server
+pnpm lint             # Run ESLint checks
+pnpm typecheck        # Run TypeScript strict checks
+pnpm test             # Run Vitest test suite
+pnpm capture-previews # Automated Playwright screenshot capture utility
 ```
 
-## Architecture & Implementation Notes (v1)
+---
 
-- **Deterministic extraction & Quick Start:** URL mode fetches HTML and up to 5 linked stylesheets with strict SSRF protection (`lib/ssrf.ts`), extracts CSS variables, color frequencies, fonts, radii, spacing, shadows, breakpoints, and motion in code (`lib/extract-styles.ts`), and passes trimmed JSON (never raw HTML) to the LLM. After streaming completes, `lib/quickstart.ts` deterministically generates and replaces `## Quick Start` with validated `:root` CSS and Tailwind v4 `@theme` blocks.
-- **No auth or database in v1:** Recent generations (last 10) are stored in `localStorage`. Extension points are clearly marked with `// TODO(auth)` and `// TODO(bookmarks)` behind swappable interfaces (`TemplateStore`, `RateLimiter`).
-- **Next.js 16 configuration:** `cacheComponents` is intentionally kept off in `next.config.ts` so `/api/generate` can declare `runtime = "nodejs"` and `maxDuration = 120` cleanly alongside build-time filesystem template loading.
+## 📚 Documentation & Guides
 
-## Known Limitations
+- 📖 **[Contribution Guide](./CONTRIBUTING.md)** — Step-by-step instructions for adding templates and submitting code.
+- 🛡️ **[Security Policy](./SECURITY.md)** — SSRF defense architecture and vulnerability reporting guidelines.
+- 📜 **[Code of Conduct](./CODE_OF_CONDUCT.md)** — Community standards and participation pledge.
+- 📄 **[License: MIT](./LICENSE)** — Free for personal and commercial open-source use.
 
-- **JavaScript-rendered SPAs:** URL mode fetches raw HTML and linked CSS without executing JavaScript. Client-rendered SPAs may yield thin extraction; Swatchbook displays a notice recommending screenshot upload while still generating a spec from whatever tokens were found.
-- **Playwright screenshot capture:** Not implemented in v1 (`lib/screenshot.ts` is stubbed behind `ENABLE_SCREENSHOT=true`).
-- **Free-tier OpenRouter models:** Free models may rate-limit, respond slowly, or omit sections. Swatchbook retries once, falls back to `OPENROUTER_FALLBACK_MODEL` when configured, and surfaces a warning banner if any of the 16 required sections are missing without hiding the generated output.
+---
 
-## Contributing & Security
-
-Contributions — especially new `DESIGN.md` templates and parser edge-case fixes — are welcome! See [CONTRIBUTING.md](./CONTRIBUTING.md), [CODE_OF_CONDUCT.md](./CODE_OF_CONDUCT.md), and [SECURITY.md](./SECURITY.md).
-
-## License
-
-[MIT](./LICENSE)
+<div align="center">
+  <sub>Built with ❤️ by the open-source community. If you find Swatchbook helpful, consider starring the repo!</sub>
+</div>

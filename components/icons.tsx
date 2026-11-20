@@ -1,10 +1,10 @@
 import type { SVGProps } from "react";
 
-export const GITHUB_REPO_URL = "https://github.com/ArslanYM/folio";
+export const GITHUB_REPO_URL = "https://github.com/ArslanYM/swatchbook";
 export const GITHUB_CONTRIBUTING_URL =
-  "https://github.com/ArslanYM/folio/blob/main/CONTRIBUTING.md";
+  "https://github.com/ArslanYM/swatchbook/blob/main/CONTRIBUTING.md";
 export const GITHUB_TEMPLATE_GUIDE_URL =
-  "https://github.com/ArslanYM/folio/blob/main/CONTRIBUTING.md#contributing-a-design-template";
+  "https://github.com/ArslanYM/swatchbook/blob/main/CONTRIBUTING.md#contributing-a-design-template";
 
 export function GithubIcon({
   className = "h-4 w-4",

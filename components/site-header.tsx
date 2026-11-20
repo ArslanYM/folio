@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { GithubIcon, GITHUB_REPO_URL } from "@/components/icons";
 import { cn } from "@/lib/utils";
 
 const NAV_ITEMS = [
@@ -99,6 +100,19 @@ export function SiteHeader() {
               </Link>
             );
           })}
+
+          <div className="mx-1 hidden h-4 w-px bg-border sm:block" aria-hidden="true" />
+
+          <a
+            href={GITHUB_REPO_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="Contribute on GitHub (opens in a new tab)"
+            className="inline-flex min-h-9 items-center gap-1.5 rounded-md border border-border bg-surface px-2.5 text-sm font-medium text-muted-foreground transition-colors hover:border-accent/60 hover:bg-raised hover:text-foreground sm:gap-2 sm:px-3"
+          >
+            <GithubIcon className="h-4 w-4 text-foreground" />
+            <span className="hidden sm:inline">GitHub</span>
+          </a>
           {/* TODO(auth): Add user menu / sign-in trigger once authentication is implemented */}
         </nav>
       </div>

@@ -5,6 +5,8 @@ export const GITHUB_CONTRIBUTING_URL =
   "https://github.com/ArslanYM/swatchbook/blob/main/CONTRIBUTING.md";
 export const GITHUB_TEMPLATE_GUIDE_URL =
   "https://github.com/ArslanYM/swatchbook/blob/main/CONTRIBUTING.md#contributing-a-design-template";
+export const GITHUB_AI_GUIDE_URL =
+  "https://github.com/ArslanYM/swatchbook/blob/main/docs/HOW_TO_USE_DESIGN_MD.md";
 
 export function GithubIcon({
   className = "h-4 w-4",

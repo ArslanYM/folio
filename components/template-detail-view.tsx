@@ -23,6 +23,7 @@ import { TemplatePreview } from "@/components/template-preview";
 import { TypeSpecimen } from "@/components/type-specimen";
 import { Button } from "@/components/ui/button";
 import { isDarkColor, luminance, pickReadableForeground } from "@/lib/color";
+import { GITHUB_AI_GUIDE_URL } from "@/components/icons";
 import { buildLandingPagePrompt } from "@/lib/prompts/landing-page";
 import type { ParsedTemplate } from "@/lib/templates";
 import { cn } from "@/lib/utils";
@@ -444,6 +445,16 @@ export function TemplateDetailView({ template }: TemplateDetailViewProps) {
             size="default"
             className="h-10 rounded-full bg-accent px-4 text-accent-foreground hover:bg-accent/90"
           />
+          <a
+            href={GITHUB_AI_GUIDE_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex h-10 items-center gap-1.5 rounded-full border border-border bg-surface px-3.5 text-xs font-medium text-muted-foreground transition-colors hover:border-accent/60 hover:bg-raised hover:text-foreground"
+          >
+            <Sparkles className="h-3.5 w-3.5 text-accent" aria-hidden="true" />
+            <span className="hidden sm:inline">AI Generation Guide</span>
+            <span className="sm:hidden">AI Guide</span>
+          </a>
         </div>
       </div>
 

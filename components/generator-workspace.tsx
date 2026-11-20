@@ -14,9 +14,11 @@ import {
   AlertTriangle,
   Download,
   RotateCcw,
+  Sparkles,
   Square,
 } from "lucide-react";
 import { toast } from "sonner";
+import { GITHUB_AI_GUIDE_URL } from "@/components/icons";
 import { CopyButton } from "@/components/copy-button";
 import { FileTabBar } from "@/components/file-tab";
 import {
@@ -592,6 +594,15 @@ export function GeneratorWorkspace() {
                       toastMessage='Copied "build a landing page" prompt'
                       className="bg-accent text-accent-foreground hover:bg-accent/90"
                     />
+                    <a
+                      href={GITHUB_AI_GUIDE_URL}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex h-7 items-center gap-1 rounded border border-border bg-canvas px-2 text-[11px] font-medium text-muted-foreground transition-colors hover:border-accent/60 hover:bg-raised hover:text-foreground"
+                    >
+                      <Sparkles className="h-2.5 w-2.5 text-accent" aria-hidden="true" />
+                      <span>AI Guide</span>
+                    </a>
                   </>
                 )}
               </div>

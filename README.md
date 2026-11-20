@@ -16,7 +16,7 @@ Extract real colors, typography, spacing, and component patterns — determinist
 
 [Quick Start](#-quick-start) •
 [Features](#-features) •
-[How It Works](#-how-it-works) •
+[AI UI Guide](#-how-to-generate-high-end-uis-with-ai) •
 [Contribute a Template](#-contribute-a-design-template-zero-code-changes) •
 [Guides](#-documentation--guides)
 
@@ -61,6 +61,25 @@ When using AI coding assistants like **Cursor**, **Claude Code**, or **GitHub Co
               ▼
   [ Ready for Cursor / Claude ] ──>  Paste into workspace & ship matching UI
 ```
+
+---
+
+## 🤖 How to Generate High-End UIs with AI
+
+Once you extract or copy a `DESIGN.md` spec, how do you get the best possible UI from **Cursor**, **Claude Code**, **Copilot**, or **v0**?
+
+### The 3-Step AI Workflow
+
+1. **Wire Tokens into CSS:** Copy the `## Quick Start` block directly into your `app/globals.css` (Tailwind v4 `@theme inline` block). Your IDE will immediately autocomplete `bg-canvas`, `text-accent`, and `border-border`.
+2. **Give Spec Context to Your AI:**
+   - **Cursor:** Tag `@DESIGN.md` in Composer (`Cmd+I`) or configure `.cursor/rules/design.mdc`.
+   - **Claude Code:** Add `All UI components MUST adhere strictly to DESIGN.md` into your `CLAUDE.md`.
+   - **GitHub Copilot:** Tag `#file:DESIGN.md` in Copilot Chat.
+   - **v0 / ChatGPT / Claude Web:** Click **"Copy 'build a landing page' prompt"** in Swatchbook and paste directly.
+3. **Use the 4-Part Prompt Structure:**
+   - (1) Role constraint &rarr; (2) Component requirements &rarr; (3) Explicit token mapping &rarr; (4) Negative constraints (anti-hallucination guardrails).
+
+👉 **Read the comprehensive [AI UI Generation Guide](./docs/HOW_TO_USE_DESIGN_MD.md)** for copy-paste `.cursorrules`, Claude Code configs, and component-by-component recipes.
 
 ---
 
@@ -144,6 +163,7 @@ pnpm capture-previews # Automated Playwright screenshot capture utility
 
 ## 📚 Documentation & Guides
 
+- 🤖 **[AI UI Generation Guide](./docs/HOW_TO_USE_DESIGN_MD.md)** — Best practices for prompting Cursor, Claude Code, Copilot, and v0 with DESIGN.md tokens.
 - 📖 **[Contribution Guide](./CONTRIBUTING.md)** — Step-by-step instructions for adding templates and submitting code.
 - 🛡️ **[Security Policy](./SECURITY.md)** — SSRF defense architecture and vulnerability reporting guidelines.
 - 📜 **[Code of Conduct](./CODE_OF_CONDUCT.md)** — Community standards and participation pledge.

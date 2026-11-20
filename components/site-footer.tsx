@@ -1,4 +1,9 @@
 import Link from "next/link";
+import {
+  GithubIcon,
+  GITHUB_REPO_URL,
+  GITHUB_CONTRIBUTING_URL,
+} from "@/components/icons";
 
 export function SiteFooter() {
   return (
@@ -15,10 +20,17 @@ export function SiteFooter() {
           <span aria-hidden="true" className="text-border">
             /
           </span>
-          <span className="font-mono">MIT License</span>
+          <a
+            href={GITHUB_REPO_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="font-mono transition-colors hover:text-foreground"
+          >
+            MIT License &middot; Open Source
+          </a>
         </div>
 
-        <nav aria-label="Footer" className="flex items-center gap-5 text-xs text-muted-foreground">
+        <nav aria-label="Footer" className="flex flex-wrap items-center gap-5 text-xs text-muted-foreground">
           <Link
             href="/templates"
             className="transition-colors hover:text-foreground"
@@ -31,6 +43,24 @@ export function SiteFooter() {
           >
             Generator
           </Link>
+          <a
+            href={GITHUB_REPO_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1.5 transition-colors hover:text-foreground"
+          >
+            <GithubIcon className="h-3.5 w-3.5" />
+            <span>GitHub</span>
+          </a>
+          <a
+            href={GITHUB_CONTRIBUTING_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1 font-medium text-accent transition-opacity hover:opacity-80"
+          >
+            <span>Contribute</span>
+            <span aria-hidden="true">&rarr;</span>
+          </a>
           {/* TODO(bookmarks): Add Saved / Bookmarks link when DB storage is enabled */}
         </nav>
       </div>

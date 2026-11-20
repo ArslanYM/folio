@@ -1,5 +1,10 @@
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, GitPullRequest } from "lucide-react";
+import {
+  GithubIcon,
+  GITHUB_REPO_URL,
+  GITHUB_CONTRIBUTING_URL,
+} from "@/components/icons";
 import { HeroGeneratorInput } from "@/components/hero-generator-input";
 import {
   SwatchMarquee,
@@ -32,12 +37,23 @@ export default async function HomePage() {
         <div className="grid grid-cols-1 gap-10 lg:grid-cols-12 lg:items-end">
           {/* Left 8 cols: Pitch + embedded generator input */}
           <div className="flex flex-col gap-6 lg:col-span-8">
-            <div className="inline-flex w-fit items-center gap-2 rounded border border-border bg-surface px-2.5 py-1 font-mono text-[11px] text-muted-foreground">
-              <span
-                aria-hidden="true"
-                className="inline-block h-2 w-2 rounded-full bg-accent"
-              />
-              <span>SPECIMEN BOOK &amp; DESIGN.MD GENERATOR</span>
+            <div className="flex flex-wrap items-center gap-2">
+              <div className="inline-flex w-fit items-center gap-2 rounded border border-border bg-surface px-2.5 py-1 font-mono text-[11px] text-muted-foreground">
+                <span
+                  aria-hidden="true"
+                  className="inline-block h-2 w-2 rounded-full bg-accent"
+                />
+                <span>SPECIMEN BOOK &amp; DESIGN.MD GENERATOR</span>
+              </div>
+              <a
+                href={GITHUB_REPO_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 rounded border border-border bg-surface/60 px-2.5 py-1 font-mono text-[11px] text-muted-foreground transition-colors hover:border-accent/60 hover:text-foreground"
+              >
+                <GithubIcon className="h-3 w-3" />
+                <span>Open Source</span>
+              </a>
             </div>
 
             <h1 className="font-display text-4xl font-bold leading-[1.02] tracking-tight text-foreground sm:text-6xl lg:text-[64px]">
@@ -235,6 +251,54 @@ export default async function HomePage() {
               </div>
             </li>
           </ol>
+        </div>
+      </section>
+
+      {/* Community & Contributing */}
+      <section className="border-t border-border bg-surface/30">
+        <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 sm:py-20 lg:px-8">
+          <div className="relative overflow-hidden rounded-2xl border border-border/80 bg-canvas/70 p-8 shadow-2xl backdrop-blur-md sm:p-12">
+            <div className="flex flex-col gap-8 lg:flex-row lg:items-center lg:justify-between">
+              <div className="max-w-2xl">
+                <div className="inline-flex items-center gap-2 rounded border border-border bg-surface px-2.5 py-1 font-mono text-[11px] text-accent">
+                  <GithubIcon className="h-3.5 w-3.5" />
+                  <span>100% OPEN SOURCE &amp; COMMUNITY DRIVEN</span>
+                </div>
+                <h2 className="mt-3 font-display text-2xl font-bold tracking-tight text-foreground sm:text-4xl">
+                  Add your favorite site&apos;s design system.
+                </h2>
+                <p className="mt-3 text-sm leading-relaxed text-muted-foreground sm:text-base">
+                  Swatchbook thrives on community contributions. Adding a new{" "}
+                  <code className="rounded border border-border bg-surface px-1.5 py-0.5 font-mono text-xs text-foreground">
+                    DESIGN.md
+                  </code>{" "}
+                  template takes 5 minutes and requires{" "}
+                  <strong className="text-foreground">zero code changes</strong> &mdash; just drop a markdown file into the templates directory.
+                </p>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-3">
+                <a
+                  href={GITHUB_REPO_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex h-11 items-center gap-2 rounded-md bg-accent px-5 text-sm font-semibold text-accent-foreground transition-opacity hover:opacity-90"
+                >
+                  <GithubIcon className="h-4 w-4" />
+                  <span>Star &amp; Fork on GitHub</span>
+                </a>
+                <a
+                  href={GITHUB_CONTRIBUTING_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex h-11 items-center gap-2 rounded-md border border-border bg-surface px-5 text-sm font-medium text-foreground transition-colors hover:border-accent/60 hover:bg-raised"
+                >
+                  <GitPullRequest className="h-4 w-4 text-accent" />
+                  <span>Contribution Guide</span>
+                </a>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
     </div>

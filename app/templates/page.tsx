@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { GitPullRequest } from "lucide-react";
+import { GITHUB_TEMPLATE_GUIDE_URL } from "@/components/icons";
 import { TemplatesGallery } from "@/components/templates-gallery";
 import { getAllTemplates } from "@/lib/templates";
 
@@ -29,7 +31,16 @@ export default async function TemplatesPage() {
           </p>
         </div>
 
-        <div className="flex shrink-0 items-center gap-3">
+        <div className="flex shrink-0 flex-wrap items-center gap-3">
+          <a
+            href={GITHUB_TEMPLATE_GUIDE_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex h-10 items-center gap-2 rounded-md border border-border bg-surface px-3.5 text-sm font-medium text-foreground transition-colors hover:border-accent/60 hover:bg-raised"
+          >
+            <GitPullRequest className="h-4 w-4 text-accent" aria-hidden="true" />
+            <span>Submit a template</span>
+          </a>
           <Link
             href="/generate"
             className="inline-flex h-10 items-center justify-center rounded-md bg-accent px-4 text-sm font-semibold text-accent-foreground transition-opacity hover:opacity-90"
